@@ -679,7 +679,7 @@ function rAdminUDINs(prefilterPartner) {
       <div class="twrap">
         <table>
           <thead><tr>
-            <th>Sl.No</th><th>Partner</th><th>FY</th><th>UDIN</th><th>Date of Signing</th>
+            <th>Sl.No</th><th>Partner</th><th>FY</th><th>UDIN</th><th>Review Remarks</th><th>Date of Signing</th>
             <th>Client Name</th><th>Document Type</th><th>Sub-Type</th>
             <th>Doc Description</th><th>Remarks</th>
             <th>Turnover</th><th>Borrowings</th><th>Networth</th>
@@ -724,7 +724,7 @@ function drawAdminTable() {
   if (!tbody) return;
 
   if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="15" class="empty">No records match the filters.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="16" class="empty">No records match the filters.</td></tr>';
     return;
   }
 
@@ -735,6 +735,7 @@ function drawAdminTable() {
       <td style="font-weight:500">${r['Partner']||''}</td>
       <td class="tmono">${r['FY']||''}</td>
       <td class="tmono" style="font-size:11px">${r['UDIN']||''}</td>
+      <td class="tclip" style="font-size:12px;color:var(--text2)">${rd.reviewRemarks||'—'}</td>
       <td style="white-space:nowrap">${r['Date of Signing']||''}</td>
       <td class="tclip">${r['Client Name']||''}</td>
       <td class="tclip">${r['Document Type']||''}</td>
@@ -985,7 +986,7 @@ function rReview() {
       <div class="twrap">
         <table>
           <thead><tr>
-            <th>Sl.No</th><th>Partner</th><th>FY</th><th>UDIN</th><th>Date of Signing</th>
+            <th>Sl.No</th><th>Partner</th><th>FY</th><th>UDIN</th><th>Review Remarks</th><th>Date of Signing</th>
             <th>Client Name</th><th>Document Type</th><th>Sub-Type</th>
             <th>Doc Description</th><th>Remarks</th>
             <th>Turnover</th><th>Borrowings</th><th>Networth</th><th>Status</th>
@@ -1019,7 +1020,7 @@ function drawTable(data) {
   const tbody = document.getElementById('ubody');
   if (!tbody) return;
   if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="14" class="empty">No records match the filters.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="15" class="empty">No records match the filters.</td></tr>';
     return;
   }
   tbody.innerHTML = data.map(r => {
@@ -1029,6 +1030,7 @@ function drawTable(data) {
       <td>${r['Partner']||''}</td>
       <td class="tmono">${r['FY']||''}</td>
       <td class="tmono" style="font-size:11px">${r['UDIN']||''}</td>
+      <td class="tclip" style="font-size:12px;color:var(--text2)">${rd.reviewRemarks||'—'}</td>
       <td style="white-space:nowrap">${r['Date of Signing']||''}</td>
       <td class="tclip">${r['Client Name']||''}</td>
       <td class="tclip">${r['Document Type']||''}</td>
