@@ -269,19 +269,41 @@ const PARTNERS = [
 ];
 
 // ══════════════════════════════════════════════
-// CHECKLISTS PER SERVICE
+// CHECKLISTS — keyed by Peer Review Tagging code
 // ══════════════════════════════════════════════
+const SA_ITEMS = ['Statutory Audit Appointment Letter','ADT 1','Engagement Letter','MRL','Checklists','Accountant\'s Compilation Report','Statutory Audit Report / Other Audit Reports','LFAR (Bank)','Financial Statements / Results','AGM Notice & Directors Report','Director\'s Declaration (Loan given is not out of Borrowed Funds)','DIR 8','MBP 1','Signed Audit Notes / ML','Tally data'];
+const IA_ITEMS = ['Appointment Letter','Signed Report','Signed Audit Notes / ML'];
+
 const CHECKLISTS = {
-  'Statutory Audit':        ['Statutory Audit Appointment Letter','ADT 1','Engagement Letter','MRL','Checklists','Accountant\'s Compilation Report','Statutory Audit Report / Other Audit Reports','LFAR (Bank)','Financial Statements / Results','AGM Notice & Directors Report','Director\'s Declaration (Loan given is not out of Borrowed Funds)','DIR 8','MBP 1','Signed Audit Notes / ML','Tally data'],
-  'Statutory Branch Audit': ['Statutory Audit Appointment Letter','ADT 1','Engagement Letter','MRL','Checklists','Accountant\'s Compilation Report','Statutory Audit Report / Other Audit Reports','LFAR (Bank)','Financial Statements / Results','AGM Notice & Directors Report','Director\'s Declaration (Loan given is not out of Borrowed Funds)','DIR 8','MBP 1','Signed Audit Notes / ML','Tally data'],
-  'Central Statutory Audit':['Statutory Audit Appointment Letter','ADT 1','Engagement Letter','MRL','Checklists','Accountant\'s Compilation Report','Statutory Audit Report / Other Audit Reports','LFAR (Bank)','Financial Statements / Results','AGM Notice & Directors Report','Director\'s Declaration (Loan given is not out of Borrowed Funds)','DIR 8','MBP 1','Signed Audit Notes / ML','Tally data'],
-  'Limited Review':         ['Statutory Audit Appointment Letter','ADT 1','Engagement Letter','MRL','Checklists','Accountant\'s Compilation Report','Statutory Audit Report / Other Audit Reports','LFAR (Bank)','Financial Statements / Results','AGM Notice & Directors Report','Director\'s Declaration (Loan given is not out of Borrowed Funds)','DIR 8','MBP 1','Signed Audit Notes / ML','Tally data'],
-  'Tax Audit & ITR':        ['Tax Audit Appointment Letter (Signed copy)','Tax Audit MRL (Signed copy)','Computation Sheet','ITR','IT Form','Form 29B','Tax Audit Report (Form 3CD)','Form 10B / 10BB','Tally data'],
-  'Certificates':           ['Certificate Request Letter','Signed Copy of Certificate issued'],
-  'Internal Audit':         ['Appointment Letter','Signed Report','Signed Audit Notes / ML'],
-  'Concurrent Audit':       ['Appointment Letter','Signed Report','Signed Audit Notes / ML'],
-  'Stock Audit':            ['Appointment Letter','Signed Report'],
-  'Revenue Audit':          ['Appointment Letter','Signed Audit Report']
+  'SA':   SA_ITEMS,
+  'SBA':  SA_ITEMS,
+  'CSA':  SA_ITEMS,
+  'LR':   SA_ITEMS,
+  'GA':   SA_ITEMS,
+  'TA':   ['Tax Audit Appointment Letter (Signed copy)','Tax Audit MRL (Signed copy)','Computation Sheet','ITR','IT Form','Form 29B','Tax Audit Report (Form 3CD)','Form 10B / 10BB','Tally data'],
+  'Cert': ['Certificate Request Letter','Signed Copy of Certificate issued'],
+  'IA':   IA_ITEMS,
+  'CA':   IA_ITEMS,
+  'CR':   IA_ITEMS,
+  'StA':  ['Appointment Letter','Signed Report'],
+  'RA':   ['Appointment Letter','Signed Audit Report'],
+  'TrA':  ['Appointment Letter','Form 10B','Financial Statements','ITR','IT Form']
+};
+
+// Helper — get checklist by Peer Review Tagging code
+function getChecklist(tag) {
+  if (!tag) return [];
+  // Trim and match — handles extra spaces
+  const t = String(tag).trim();
+  return CHECKLISTS[t] || [];
+}
+
+// Helper — get display name for tag code
+const TAG_NAMES = {
+  'SA':'Statutory Audit','SBA':'Statutory Branch Audit','CSA':'Central Statutory Audit',
+  'LR':'Limited Review','GA':'Government Audit','TA':'Tax Audit',
+  'Cert':'Certificate','IA':'Internal Audit','CA':'Concurrent Audit',
+  'CR':'Compilation Report','StA':'Stock Audit','RA':'Revenue Audit','TrA':'Trust Audit'
 };
 
 // ══════════════════════════════════════════════
@@ -570,8 +592,8 @@ async function sendReports() {
     const pending = total - completed;
     const todayDone = pu.filter(r => { const rd = RD[r['UDIN']]; return rd && rd.completedDate && new Date(rd.completedDate).toDateString() === todayKey; }).length;
     const pendingPct = total ? Math.round((pending / total) * 100) : 0;
-    const completedList = pu.filter(r => getStatus(r['UDIN']) === 'Completed').map(r => `${r['UDIN']} — ${r['Client Name'] || ''} (${r['Sub-Type'] || ''})`);
-    const pendingList = pu.filter(r => getStatus(r['UDIN']) !== 'Completed').map(r => `${r['UDIN']} — ${r['Client Name'] || ''} (${r['Sub-Type'] || ''})`);
+    const completedList = pu.filter(r => getStatus(r['UDIN']) === 'Completed').map(r => `${r['UDIN']} — ${r['Client Name'] || ''} (${r['Sub-type'] || ''})`);
+    const pendingList = pu.filter(r => getStatus(r['UDIN']) !== 'Completed').map(r => `${r['UDIN']} — ${r['Client Name'] || ''} (${r['Sub-type'] || ''})`);
     return { name: p.name, email: p.email, total, completed, pending, todayDone, pendingPct, completedList, pendingList, date: todayStr };
   });
   try {
@@ -630,7 +652,7 @@ function rAdminUDINs(prefilterPartner) {
       <div class="fg"><label>FY Period</label>
         <select id="aFY" onchange="applyAdminF()">
           <option value="">All</option>
-          <option>FY 2023-24</option><option>FY 2024-25</option><option>FY 2025-26</option>
+          <option>2023-24</option><option>2024-25</option><option>2025-26</option>
         </select>
       </div>
       <div class="fg"><label>Status</label>
@@ -708,10 +730,10 @@ function drawAdminTable() {
       <td style="font-weight:500">${r['Partner']||''}</td>
       <td class="tmono">${r['FY']||''}</td>
       <td class="tmono" style="font-size:11px">${r['UDIN']||''}</td>
-      <td style="white-space:nowrap">${r['Date of signing']||''}</td>
+      <td style="white-space:nowrap">${r['Date of Signing']||''}</td>
       <td class="tclip">${r['Client Name']||''}</td>
       <td class="tclip">${r['Document Type']||''}</td>
-      <td class="tclip">${r['Sub-Type']||''}</td>
+      <td class="tclip">${r['Sub-type']||''}</td>
       <td class="tclip">${r['Document Description']||''}</td>
       <td class="tclip">${r['Remarks']||''}</td>
       <td class="tmono" style="font-size:11px">${inr(rd.turnover !== undefined && rd.turnover !== '' ? rd.turnover : r['Turnover'])}</td>
@@ -726,8 +748,9 @@ function drawAdminTable() {
 function openAdminCL(udin) {
   const rec = UDINS.find(r => r['UDIN'] === udin);
   if (!rec) return;
-  const svc   = rec['Sub-Type'] || '';
-  const items = CHECKLISTS[svc] || [];
+  const tag     = String(rec['Peer Review Tagging'] || '').trim();
+  const items   = getChecklist(tag);
+  const svcName = TAG_NAMES[tag] || tag || rec['Sub-type'] || 'Unknown Service';
   if (!RD[udin]) RD[udin] = { items:{}, turnover:'', borrowings:'', networth:'', completed:false, completedDate:null, completedBy:'' };
   const rd = RD[udin];
 
@@ -752,9 +775,9 @@ function openAdminCL(udin) {
   area.innerHTML = `<div class="clpanel">
     <div class="clhead">
       <div class="clhinfo">
-        <h3>${rec['Client Name']||''} — ${svc}</h3>
+        <h3>${rec['Client Name']||''} — ${svcName}</h3>
         <p>UDIN: <span class="tmono">${udin}</span> &nbsp;·&nbsp; Partner: ${rec['Partner']||''} &nbsp;·&nbsp; ${rec['FY']||''} &nbsp;·&nbsp;
-          <span style="color:var(--accent);font-weight:500">Peer Review Tagging: ${rec['Peer Review Tagging']||'—'}</span></p>
+          <span style="color:var(--accent);font-weight:500">Tag: ${tag} | ${svcName}</span></p>
       </div>
       <div class="clpct">
         <div class="clpbar"><div class="clpfill" id="apfill" style="width:${pct()}%"></div></div>
@@ -768,7 +791,7 @@ function openAdminCL(udin) {
         <div class="ffield"><label>Borrowings (₹)</label><input type="number" id="afB" value="${rd.borrowings||''}" placeholder="Enter amount" oninput="updAF('borrowings',this.value,'${udin}')"></div>
         <div class="ffield"><label>Networth (₹)</label><input type="number" id="afN" value="${rd.networth||''}" placeholder="Enter amount" oninput="updAF('networth',this.value,'${udin}')"></div>
       </div>
-      <div class="clsect">Checklist — ${svc} (${items.length} items)</div>
+      <div class="clsect">Checklist — ${svcName} (${items.length} items)</div>
       <div class="clitems">
         ${items.map((item, i) => `
         <div class="clitem" id="aci${i}">
@@ -800,8 +823,8 @@ window.updAF = function(field, val, udin) {
   refreshACL(udin);
 };
 window.markAI = function(idx, val, udin) {
-  const svc      = (UDINS.find(r => r['UDIN'] === udin)||{})['Sub-Type']||'';
-  const itemName = (CHECKLISTS[svc]||[])[idx]||'Item '+(idx+1);
+  const tag      = String((UDINS.find(r => r['UDIN'] === udin)||{})['Peer Review Tagging']||'').trim();
+  const itemName = (getChecklist(tag)||[])[idx]||'Item '+(idx+1);
   const old      = RD[udin].items[idx];
   RD[udin].items[idx] = val;
   if (old !== val) log('MARK', udin, `${CU.username} (admin) marked "${itemName}" as ${val}`, old||'—', val);
@@ -832,8 +855,8 @@ window.markADone = function(udin) {
 
 function refreshACL(udin) {
   const rd    = RD[udin];
-  const svc   = (UDINS.find(r => r['UDIN'] === udin)||{})['Sub-Type']||'';
-  const items = CHECKLISTS[svc]||[];
+  const tag   = String((UDINS.find(r => r['UDIN'] === udin)||{})['Peer Review Tagging']||'').trim();
+  const items = getChecklist(tag);
   function pct() {
     const marked = items.filter((_,i) => rd.items[i]).length;
     const finOk  = rd.turnover && rd.borrowings && rd.networth ? 1 : 0;
@@ -933,7 +956,7 @@ function rReview() {
   document.getElementById('mainArea').innerHTML = `
     <div class="filters">
       <div class="fg"><label>FY Period</label>
-        <select id="fFY"><option value="">All</option><option>FY 2023-24</option><option>FY 2024-25</option><option>FY 2025-26</option></select></div>
+        <select id="fFY"><option value="">All</option><option>2023-24</option><option>2024-25</option><option>2025-26</option></select></div>
       <div class="fg"><label>Status</label>
         <select id="fSt"><option value="">All</option><option>Pending</option><option>In Progress</option><option>Completed</option></select></div>
       <button class="btn" onclick="applyF()">Apply</button>
@@ -994,10 +1017,10 @@ function drawTable(data) {
       <td>${r['Partner']||''}</td>
       <td class="tmono">${r['FY']||''}</td>
       <td class="tmono" style="font-size:11px">${r['UDIN']||''}</td>
-      <td style="white-space:nowrap">${r['Date of signing']||''}</td>
+      <td style="white-space:nowrap">${r['Date of Signing']||''}</td>
       <td class="tclip">${r['Client Name']||''}</td>
       <td class="tclip">${r['Document Type']||''}</td>
-      <td class="tclip">${r['Sub-Type']||''}</td>
+      <td class="tclip">${r['Sub-type']||''}</td>
       <td class="tclip">${r['Document Description']||''}</td>
       <td class="tclip">${r['Remarks']||''}</td>
       <td class="tmono" style="font-size:11px">${inr(rd.turnover !== undefined ? rd.turnover : r['Turnover'])}</td>
@@ -1014,8 +1037,9 @@ function drawTable(data) {
 function openCL(udin) {
   const rec = UDINS.find(r => r['UDIN'] === udin);
   if (!rec) return;
-  const svc = rec['Sub-Type'] || '';
-  const items = CHECKLISTS[svc] || [];
+  const tag     = String(rec['Peer Review Tagging'] || '').trim();
+  const items   = getChecklist(tag);
+  const svcName = TAG_NAMES[tag] || tag || rec['Sub-type'] || 'Unknown Service';
   if (!RD[udin]) RD[udin] = { items:{}, turnover:'', borrowings:'', networth:'', completed:false, completedDate:null, completedBy:'' };
   const rd = RD[udin];
 
@@ -1040,8 +1064,8 @@ function openCL(udin) {
   area.innerHTML = `<div class="clpanel">
     <div class="clhead">
       <div class="clhinfo">
-        <h3>${rec['Client Name']||''} — ${svc}</h3>
-        <p>UDIN: <span class="tmono">${udin}</span> &nbsp;·&nbsp; Partner: ${rec['Partner']||''} &nbsp;·&nbsp; ${rec['FY']||''}</p>
+        <h3>${rec['Client Name']||''} — ${svcName}</h3>
+        <p>UDIN: <span class="tmono">${udin}</span> &nbsp;·&nbsp; Partner: ${rec['Partner']||''} &nbsp;·&nbsp; ${rec['FY']||''} &nbsp;·&nbsp; Tag: <strong>${tag}</strong></p>
       </div>
       <div class="clpct">
         <div class="clpbar"><div class="clpfill" id="pfill" style="width:${pct()}%"></div></div>
@@ -1088,8 +1112,8 @@ window.updF = function(field, val, udin) {
 };
 
 window.markI = function(idx, val, udin) {
-  const svc = (UDINS.find(r => r['UDIN'] === udin)||{})['Sub-Type']||'';
-  const itemName = (CHECKLISTS[svc]||[])[idx]||'Item '+(idx+1);
+  const tag      = String((UDINS.find(r => r['UDIN'] === udin)||{})['Peer Review Tagging']||'').trim();
+  const itemName = (getChecklist(tag)||[])[idx]||'Item '+(idx+1);
   const old = RD[udin].items[idx];
   RD[udin].items[idx] = val;
   if (old !== val) log('MARK', udin, `${CU.username} marked "${itemName}" as ${val}`, old||'—', val);
@@ -1121,9 +1145,9 @@ window.markDone = function(udin) {
 };
 
 function refreshCL(udin) {
-  const rd = RD[udin];
-  const svc = (UDINS.find(r => r['UDIN'] === udin)||{})['Sub-Type']||'';
-  const items = CHECKLISTS[svc]||[];
+  const rd    = RD[udin];
+  const tag   = String((UDINS.find(r => r['UDIN'] === udin)||{})['Peer Review Tagging']||'').trim();
+  const items = getChecklist(tag);
   function pct() {
     const marked = items.filter((_,i) => rd.items[i]).length;
     const finOk = rd.turnover && rd.borrowings && rd.networth ? 1 : 0;
