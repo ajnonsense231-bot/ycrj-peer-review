@@ -300,7 +300,14 @@ function doLogin() {
   const p = document.getElementById('lpwd').value;
   const user = USERS.find(x => x.username === u && x.password === p);
   if (!user) { document.getElementById('lerr').style.display = 'block'; return; }
+  startSession(user, true);
+}
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.getElementById('loginPage').style.display !== 'none') doLogin(); });
+
+function startSession(user, isNewLogin) {
   CU = user;
+  // Save session to localStorage
+  try { localStorage.setItem('ycrj_session', JSON.stringify({ username: user.username })); } catch(e) {}
   document.getElementById('loginPage').style.display = 'none';
   document.getElementById('appShell').style.display = 'flex';
   document.getElementById('uav').textContent = user.name.charAt(0).toUpperCase();
@@ -311,18 +318,32 @@ function doLogin() {
   loadLocal();
   buildNav();
   fetchUDINs(false);
-  log('LOGIN', null, `${user.name} logged in`);
+  if (isNewLogin) log('LOGIN', null, `${user.name} logged in`);
 }
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.getElementById('loginPage').style.display !== 'none') doLogin(); });
 
 function doLogout() {
   CU = null;
+  try { localStorage.removeItem('ycrj_session'); } catch(e) {}
   document.getElementById('appShell').style.display = 'none';
   document.getElementById('loginPage').style.display = 'flex';
   document.getElementById('lusr').value = '';
   document.getElementById('lpwd').value = '';
   document.getElementById('lerr').style.display = 'none';
 }
+
+// Auto-restore session on page load
+window.addEventListener('load', () => {
+  try {
+    const saved = localStorage.getItem('ycrj_session');
+    if (saved) {
+      const { username } = JSON.parse(saved);
+      const user = USERS.find(x => x.username === username);
+      if (user) { startSession(user, false); return; }
+    }
+  } catch(e) {}
+  // No saved session — show login
+  document.getElementById('loginPage').style.display = 'flex';
+});
 
 // ══════════════════════════════════════════════
 // NAV
@@ -332,6 +353,7 @@ function buildNav() {
   if (CU.role === 'admin') {
     nav.innerHTML = `
       <button class="ntab on" onclick="setTab(this,'rDash')">Dashboard</button>
+      <button class="ntab" id="udinListTab" onclick="setTab(this,'rAdminUDINs')">UDIN List</button>
       <button class="ntab" onclick="setTab(this,'rSetup')">Setup</button>`;
     rDash();
   } else {
@@ -473,7 +495,7 @@ function rDash() {
     const pct = pt ? Math.round((pc / pt) * 100) : 0;
     const pi = PARTNERS.find(x => x.name === p);
     return `<tr>
-      <td style="font-weight:600">${p}</td>
+      <td><span style="font-weight:600;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px" onclick="goToUDINList('${p}')">${p}</span></td>
       <td class="tmono" style="font-size:11px;color:var(--text3)">${pi ? pi.email : '—'}</td>
       <td style="text-align:center" class="tmono">${pt}</td>
       <td style="text-align:center"><span style="color:var(--green);font-weight:700;font-family:'DM Mono',monospace">${pc}</span></td>
@@ -571,6 +593,262 @@ async function sendReports() {
 function showSlog(msg, type) {
   const el = document.getElementById('slog'); if (!el) return;
   el.textContent = msg; el.className = 'slog ' + type; el.style.display = 'block';
+}
+
+// ══════════════════════════════════════════════
+// ADMIN UDIN LIST TAB
+// ══════════════════════════════════════════════
+function goToUDINList(partnerName) {
+  // Switch to UDIN List tab
+  document.querySelectorAll('.ntab').forEach(b => b.classList.remove('on'));
+  document.getElementById('udinListTab').classList.add('on');
+  rAdminUDINs(partnerName);
+}
+
+function rAdminUDINs(prefilterPartner) {
+  const partners = [...new Set(UDINS.map(r => r['Partner']).filter(Boolean))].sort();
+  const selPartner = prefilterPartner || '';
+  const selFY = '';
+  const selStatus = '';
+
+  document.getElementById('mainArea').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+      <button class="btn" onclick="document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));document.querySelector('.ntab').classList.add('on');rDash();" 
+        style="display:flex;align-items:center;gap:6px;font-weight:500">
+        ← Back to Dashboard
+      </button>
+      <div style="font-size:14px;font-weight:600;color:var(--text2)">UDIN List</div>
+    </div>
+
+    <div class="filters">
+      <div class="fg"><label>Partner</label>
+        <select id="aPartner" onchange="applyAdminF()">
+          <option value="">All Partners</option>
+          ${partners.map(p => `<option value="${p}" ${p===selPartner?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>FY Period</label>
+        <select id="aFY" onchange="applyAdminF()">
+          <option value="">All</option>
+          <option>FY 2023-24</option><option>FY 2024-25</option><option>FY 2025-26</option>
+        </select>
+      </div>
+      <div class="fg"><label>Status</label>
+        <select id="aSt" onchange="applyAdminF()">
+          <option value="">All</option>
+          <option>Pending</option><option>In Progress</option><option>Completed</option>
+        </select>
+      </div>
+      <button class="btn" onclick="applyAdminF()">Apply</button>
+      <button class="btn" onclick="resetAdminF()">Reset</button>
+      <div style="margin-left:auto;font-size:12px;color:var(--text3);align-self:center" id="adminUdinCount"></div>
+    </div>
+
+    <div class="card">
+      <div class="chead">
+        <span class="ctitle" id="adminListTitle">UDIN List</span>
+        <span class="csub" id="adminUdinCnt"></span>
+      </div>
+      <div class="twrap">
+        <table>
+          <thead><tr>
+            <th>Sl.No</th><th>Partner</th><th>FY</th><th>UDIN</th><th>Date of Signing</th>
+            <th>Client Name</th><th>Document Type</th><th>Sub-Type</th>
+            <th>Doc Description</th><th>Remarks</th>
+            <th>Turnover</th><th>Borrowings</th><th>Networth</th>
+            <th>Peer Review Tagging</th><th>Status</th>
+          </tr></thead>
+          <tbody id="adminUbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="adminClArea"></div>`;
+
+  // Apply prefilter
+  if (prefilterPartner) document.getElementById('aPartner').value = prefilterPartner;
+  drawAdminTable();
+}
+
+function applyAdminF() {
+  drawAdminTable();
+}
+
+function resetAdminF() {
+  ['aPartner','aFY','aSt'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  drawAdminTable();
+}
+
+function drawAdminTable() {
+  const partner = (document.getElementById('aPartner')||{}).value || '';
+  const fy      = (document.getElementById('aFY')||{}).value || '';
+  const status  = (document.getElementById('aSt')||{}).value || '';
+
+  let data = [...UDINS];
+  if (partner) data = data.filter(r => r['Partner'] === partner);
+  if (fy)      data = data.filter(r => r['FY'] === fy);
+  if (status)  data = data.filter(r => getStatus(r['UDIN']) === status);
+
+  const cnt = document.getElementById('adminUdinCnt');
+  if (cnt) cnt.textContent = data.length + ' record(s)';
+  const title = document.getElementById('adminListTitle');
+  if (title) title.textContent = partner ? `${partner} — UDIN List` : 'All Partners — UDIN List';
+
+  const tbody = document.getElementById('adminUbody');
+  if (!tbody) return;
+
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="15" class="empty">No records match the filters.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(r => {
+    const rd = RD[r['UDIN']] || {};
+    return `<tr class="clickable" onclick="openAdminCL('${r['UDIN']}')">
+      <td class="tmono">${r['Sl.No']||''}</td>
+      <td style="font-weight:500">${r['Partner']||''}</td>
+      <td class="tmono">${r['FY']||''}</td>
+      <td class="tmono" style="font-size:11px">${r['UDIN']||''}</td>
+      <td style="white-space:nowrap">${r['Date of signing']||''}</td>
+      <td class="tclip">${r['Client Name']||''}</td>
+      <td class="tclip">${r['Document Type']||''}</td>
+      <td class="tclip">${r['Sub-Type']||''}</td>
+      <td class="tclip">${r['Document Description']||''}</td>
+      <td class="tclip">${r['Remarks']||''}</td>
+      <td class="tmono" style="font-size:11px">${inr(rd.turnover !== undefined && rd.turnover !== '' ? rd.turnover : r['Turnover'])}</td>
+      <td class="tmono" style="font-size:11px">${inr(rd.borrowings !== undefined && rd.borrowings !== '' ? rd.borrowings : r['Borrowings'])}</td>
+      <td class="tmono" style="font-size:11px">${inr(rd.networth !== undefined && rd.networth !== '' ? rd.networth : r['Networth'])}</td>
+      <td><span style="font-size:12px;color:var(--accent);font-weight:500">${r['Peer Review Tagging']||'—'}</span></td>
+      <td>${badge(getStatus(r['UDIN']))}</td>
+    </tr>`;
+  }).join('');
+}
+
+function openAdminCL(udin) {
+  const rec = UDINS.find(r => r['UDIN'] === udin);
+  if (!rec) return;
+  const svc   = rec['Sub-Type'] || '';
+  const items = CHECKLISTS[svc] || [];
+  if (!RD[udin]) RD[udin] = { items:{}, turnover:'', borrowings:'', networth:'', completed:false, completedDate:null, completedBy:'' };
+  const rd = RD[udin];
+
+  // Pre-fill financials from sheet if blank
+  if (rd.turnover   === '' && rec['Turnover'])   rd.turnover   = rec['Turnover'];
+  if (rd.borrowings === '' && rec['Borrowings']) rd.borrowings = rec['Borrowings'];
+  if (rd.networth   === '' && rec['Networth'])   rd.networth   = rec['Networth'];
+
+  log('OPEN', udin, `${CU.username} (admin) opened UDIN for review`);
+  const area = document.getElementById('adminClArea');
+  if (!area) return;
+
+  function pct() {
+    const marked = items.filter((_, i) => rd.items[i]).length;
+    const finOk  = rd.turnover && rd.borrowings && rd.networth ? 1 : 0;
+    return items.length ? Math.round(((marked + finOk) / (items.length + 1)) * 100) : (finOk ? 100 : 0);
+  }
+  function canComplete() {
+    return items.every((_, i) => rd.items[i]) && rd.turnover && rd.borrowings && rd.networth;
+  }
+
+  area.innerHTML = `<div class="clpanel">
+    <div class="clhead">
+      <div class="clhinfo">
+        <h3>${rec['Client Name']||''} — ${svc}</h3>
+        <p>UDIN: <span class="tmono">${udin}</span> &nbsp;·&nbsp; Partner: ${rec['Partner']||''} &nbsp;·&nbsp; ${rec['FY']||''} &nbsp;·&nbsp;
+          <span style="color:var(--accent);font-weight:500">Peer Review Tagging: ${rec['Peer Review Tagging']||'—'}</span></p>
+      </div>
+      <div class="clpct">
+        <div class="clpbar"><div class="clpfill" id="apfill" style="width:${pct()}%"></div></div>
+        <span class="clpnum" id="apnum">${pct()}%</span>
+      </div>
+    </div>
+    <div class="clbody">
+      <div class="clsect">Financial Details — Verify &amp; Confirm (Mandatory)</div>
+      <div class="fingrid">
+        <div class="ffield"><label>Turnover (₹)</label><input type="number" id="afT" value="${rd.turnover||''}" placeholder="Enter amount" oninput="updAF('turnover',this.value,'${udin}')"></div>
+        <div class="ffield"><label>Borrowings (₹)</label><input type="number" id="afB" value="${rd.borrowings||''}" placeholder="Enter amount" oninput="updAF('borrowings',this.value,'${udin}')"></div>
+        <div class="ffield"><label>Networth (₹)</label><input type="number" id="afN" value="${rd.networth||''}" placeholder="Enter amount" oninput="updAF('networth',this.value,'${udin}')"></div>
+      </div>
+      <div class="clsect">Checklist — ${svc} (${items.length} items)</div>
+      <div class="clitems">
+        ${items.map((item, i) => `
+        <div class="clitem" id="aci${i}">
+          <span class="clinum">${i+1}</span>
+          <span class="cliname">${item}</span>
+          <div class="clibtns">
+            <button class="mbtn yes ${rd.items[i]==='Yes'?'on':''}" onclick="markAI(${i},'Yes','${udin}')">Yes</button>
+            <button class="mbtn no ${rd.items[i]==='No'?'on':''}" onclick="markAI(${i},'No','${udin}')">No</button>
+            <button class="mbtn na ${rd.items[i]==='NA'?'on':''}" onclick="markAI(${i},'NA','${udin}')">NA</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="clfooter">
+      <div class="clfoot-left" id="aclstatus">${rd.completed ? `Completed by <strong>${rd.completedBy}</strong> on ${fts(rd.completedDate)}` : 'Complete all checklist items and confirm financials to mark as done.'}</div>
+      <div class="clfoot-right">
+        <button class="btn" onclick="saveAP('${udin}')">Save Progress</button>
+        <button class="btn btn-green" id="abtnC" onclick="markADone('${udin}')" ${canComplete()?'':'disabled'}>${rd.completed?'✓ Re-mark Complete':'Mark as Complete'}</button>
+      </div>
+    </div>
+  </div>`;
+  area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+window.updAF = function(field, val, udin) {
+  const old = RD[udin][field];
+  RD[udin][field] = val;
+  if (String(old) !== String(val)) log('EDIT_FIN', udin, `${CU.username} (admin) updated ${field}`, old||'—', val||'—');
+  refreshACL(udin);
+};
+window.markAI = function(idx, val, udin) {
+  const svc      = (UDINS.find(r => r['UDIN'] === udin)||{})['Sub-Type']||'';
+  const itemName = (CHECKLISTS[svc]||[])[idx]||'Item '+(idx+1);
+  const old      = RD[udin].items[idx];
+  RD[udin].items[idx] = val;
+  if (old !== val) log('MARK', udin, `${CU.username} (admin) marked "${itemName}" as ${val}`, old||'—', val);
+  refreshACL(udin);
+};
+window.saveAP = function(udin) {
+  RD[udin].savedBy = CU.username;
+  RD[udin].savedAt = new Date().toISOString();
+  saveLocal();
+  drawAdminTable();
+  log('SAVE', udin, `${CU.username} (admin) saved progress`);
+  toast('Progress saved ✓');
+};
+window.markADone = function(udin) {
+  const wasCompleted    = RD[udin].completed;
+  RD[udin].completed    = true;
+  RD[udin].completedBy  = CU.username;
+  RD[udin].completedDate= new Date().toISOString();
+  saveLocal();
+  drawAdminTable();
+  log(wasCompleted?'RE_COMPLETE':'COMPLETE', udin, `${CU.username} (admin) marked UDIN as complete`);
+  toast('UDIN marked as Completed ✓');
+  const bc = document.getElementById('abtnC');
+  if (bc) { bc.textContent = '✓ Re-mark Complete'; bc.disabled = false; }
+  const cs = document.getElementById('aclstatus');
+  if (cs) cs.innerHTML = `Completed by <strong>${CU.username}</strong> on ${fts(new Date().toISOString())}`;
+};
+
+function refreshACL(udin) {
+  const rd    = RD[udin];
+  const svc   = (UDINS.find(r => r['UDIN'] === udin)||{})['Sub-Type']||'';
+  const items = CHECKLISTS[svc]||[];
+  function pct() {
+    const marked = items.filter((_,i) => rd.items[i]).length;
+    const finOk  = rd.turnover && rd.borrowings && rd.networth ? 1 : 0;
+    return items.length ? Math.round(((marked+finOk)/(items.length+1))*100) : (finOk?100:0);
+  }
+  const pf = document.getElementById('apfill'); if (pf) pf.style.width = pct()+'%';
+  const pn = document.getElementById('apnum');  if (pn) pn.textContent = pct()+'%';
+  items.forEach((_,i) => {
+    const ci = document.getElementById('aci'+i); if (!ci) return;
+    ci.querySelectorAll('.mbtn').forEach(b => b.classList.remove('on'));
+    const v = rd.items[i];
+    if (v) { const b = ci.querySelector('.mbtn.'+v.toLowerCase()); if(b) b.classList.add('on'); }
+  });
+  const bc = document.getElementById('abtnC');
+  if (bc) bc.disabled = !(items.every((_,i) => rd.items[i]) && rd.turnover && rd.borrowings && rd.networth);
 }
 
 // ══════════════════════════════════════════════
