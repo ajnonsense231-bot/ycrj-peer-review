@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peer Review Status — YCRJ and Associates</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F3EF;--surface:#FFFFFF;--surface2:#F0EFE9;--border:#E0DED6;
+  --text:#1A1916;--text2:#5C5B56;--text3:#9B9990;
+  --accent:#1B4F8A;--accent-bg:#EAF0F8;
+  --green:#276B34;--green-bg:#E8F4EB;--green-border:#A3CEA9;
+  --red:#A82828;--red-bg:#FAE8E8;
+  --amber:#7A4F00;--amber-bg:#FDF3E0;
+  --r:10px;--r-sm:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.06);
+  --shadow-md:0 4px 16px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;height:54px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
+.tbrand{display:flex;align-items:center;gap:10px}
+.tmark{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px}
+.tname{font-size:14px;font-weight:600}
+.tsub{font-size:11px;color:var(--text3)}
+.tright{font-size:12px;color:var(--text3)}
+.main{padding:1.5rem;max-width:1400px;margin:0 auto}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.hero-name{font-size:22px;font-weight:600}
+.hero-sub{font-size:13px;color:var(--text2);margin-top:3px}
+.hero-date{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
+.mrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:1.25rem}
+.mcard{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.875rem 1rem}
+.mlabel{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.mval{font-size:26px;font-weight:700;font-family:'DM Mono',monospace}
+.mval.blue{color:var(--accent)}.mval.green{color:var(--green)}.mval.red{color:var(--red)}.mval.amber{color:var(--amber)}
+.prog-row{display:flex;align-items:center;gap:8px;margin-top:1rem}
+.prog-label{font-size:12px;color:var(--text2);width:80px}
+.prog-bg{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:var(--green);border-radius:4px;transition:width .4s}
+.prog-val{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;min-width:40px;text-align:right}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.25rem}
+.chead{padding:.875rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ctitle{font-size:14px;font-weight:600}
+.csub{font-size:12px;color:var(--text3)}
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:9px 10px;vertical-align:middle}
+.tmono{font-family:'DM Mono',monospace;font-size:11px}
+.tclip{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-pending{background:var(--red-bg);color:var(--red)}
+.b-progress{background:var(--amber-bg);color:var(--amber)}
+.b-complete{background:var(--green-bg);color:var(--green)}
+.loading{text-align:center;padding:4rem;color:var(--text3)}
+.loading p{margin-top:8px;font-size:13px}
+.error-box{background:var(--red-bg);border:1px solid #E8AAAA;border-radius:var(--r);padding:1.25rem;text-align:center;color:var(--red);font-size:13px}
+.readonly-note{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 12px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tbrand">
+    <div class="tmark">YR</div>
+    <div>
+      <div class="tname">YCRJ and Associates</div>
+      <div class="tsub">Peer Review Status</div>
+    </div>
+  </div>
+  <div class="tright readonly-note">🔒 Read-only view · Your UDINs only</div>
+</div>
+
+<div class="main">
+  <div id="content"><div class="loading"><div style="font-size:24px">⏳</div><p>Loading your UDIN status...</p></div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7daek7-QkykI3w9ZPq7is_7lemQhISfWloF5vkHVqpJLP3ItgSGD3Z8MEyr1wRd9Yxypjfp0Cu-gp/pub?gid=0&single=true&output=csv';
+
+// ── Partner ID to name mapping ──
+const PARTNER_MAP = {
+  'VijayendraRNayak':  'Vijayendra R Nayak',
+  'YashavanhtKhanderi': 'Yashavanth Khanderi'
+};
+
+function getStatus(rd) {
+  if (!rd) return 'Pending';
+  if (rd.completed) return 'Completed';
+  const hasAny = Object.keys(rd.items || {}).length > 0 || rd.turnover || rd.borrowings || rd.networth;
+  return hasAny ? 'In Progress' : 'Pending';
+}
+function badge(s) {
+  const c = { Pending:'b-pending', 'In Progress':'b-progress', Completed:'b-complete' };
+  return `<span class="badge ${c[s]||'b-pending'}">${s}</span>`;
+}
+function inr(v) { return v ? '₹' + Number(v).toLocaleString('en-IN') : '—'; }
+
+window.onload = function() {
+  // Get partner ID from URL
+  const params     = new URLSearchParams(window.location.search);
+  const partnerId  = params.get('partner');
+  const partnerName = PARTNER_MAP[partnerId];
+
+  if (!partnerName) {
+    document.getElementById('content').innerHTML = `
+      <div class="error-box">
+        <strong>Invalid or missing partner link.</strong><br>
+        Please use the link provided in your email report.
+      </div>`;
+    return;
+  }
+
+  // Fetch UDIN data
+  fetch(SHEET_URL + '&cachebust=' + Date.now())
+    .then(r => r.text())
+    .then(csv => {
+      const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true });
+      const allUDINs = parsed.data.filter(r => r['UDIN'] && String(r['UDIN']).trim());
+      const myUDINs  = allUDINs.filter(r => r['Partner'] === partnerName);
+
+      // Load review data from localStorage (read-only access)
+      let RD = {};
+      try { const r = localStorage.getItem('ycrj_rd'); if (r) RD = JSON.parse(r); } catch(e) {}
+
+      const total     = myUDINs.length;
+      const completed = myUDINs.filter(r => getStatus(RD[r['UDIN']]) === 'Completed').length;
+      const inprog    = myUDINs.filter(r => getStatus(RD[r['UDIN']]) === 'In Progress').length;
+      const pending   = myUDINs.filter(r => getStatus(RD[r['UDIN']]) === 'Pending').length;
+      const pct       = total ? Math.round((completed / total) * 100) : 0;
+      const today     = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      const todayKey  = new Date().toDateString();
+      const todayDone = myUDINs.filter(r => {
+        const rd = RD[r['UDIN']];
+        return rd && rd.completedDate && new Date(rd.completedDate).toDateString() === todayKey;
+      }).length;
+
+      const rows = myUDINs.map(r => {
+        const rd  = RD[r['UDIN']] || {};
+        const st  = getStatus(rd);
+        return `<tr>
+          <td class="tmono">${r['Sl.No']||''}</td>
+          <td class="tmono" style="font-size:11px">${r['UDIN']||''}</td>
+          <td style="white-space:nowrap">${r['Date of Signing']||''}</td>
+          <td class="tclip">${r['Client Name']||''}</td>
+          <td class="tclip">${r['Document Type']||''}</td>
+          <td class="tclip">${r['Sub-type']||''}</td>
+          <td class="tclip">${r['Document Description']||''}</td>
+          <td class="tmono" style="font-size:11px">${inr(rd.turnover||r['Turnover'])}</td>
+          <td class="tmono" style="font-size:11px">${inr(rd.borrowings||r['Borrowings'])}</td>
+          <td class="tmono" style="font-size:11px">${inr(rd.networth||r['Networth'])}</td>
+          <td>${badge(st)}</td>
+          <td style="font-size:12px;color:var(--text2)">${rd.reviewRemarks||'—'}</td>
+        </tr>`;
+      }).join('');
+
+      document.getElementById('content').innerHTML = `
+        <div class="hero">
+          <div class="hero-top">
+            <div>
+              <div class="hero-name">${partnerName}</div>
+              <div class="hero-sub">Peer Review Status — ${total} UDIN(s) assigned</div>
+            </div>
+            <div class="hero-date">As of ${today}</div>
+          </div>
+          <div class="mrow">
+            <div class="mcard"><div class="mlabel">Total</div><div class="mval blue">${total}</div></div>
+            <div class="mcard"><div class="mlabel">Completed</div><div class="mval green">${completed}</div></div>
+            <div class="mcard"><div class="mlabel">In Progress</div><div class="mval amber">${inprog}</div></div>
+            <div class="mcard"><div class="mlabel">Pending</div><div class="mval red">${pending}</div></div>
+            <div class="mcard"><div class="mlabel">Done Today</div><div class="mval green">${todayDone}</div></div>
+          </div>
+          <div class="prog-row">
+            <span class="prog-label">Completion</span>
+            <div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div>
+            <span class="prog-val">${pct}%</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="chead">
+            <span class="ctitle">Your UDIN List</span>
+            <span class="csub">${total} record(s)</span>
+          </div>
+          <div class="twrap">
+            <table>
+              <thead><tr>
+                <th>Sl.No</th><th>UDIN</th><th>Date</th><th>Client Name</th>
+                <th>Doc Type</th><th>Service</th><th>Description</th>
+                <th>Turnover</th><th>Borrowings</th><th>Networth</th>
+                <th>Status</th><th>Remarks</th>
+              </tr></thead>
+              <tbody>${rows || '<tr><td colspan="12" style="text-align:center;padding:2rem;color:var(--text3)">No UDINs found.</td></tr>'}</tbody>
+            </table>
+          </div>
+        </div>`;
+    })
+    .catch(err => {
+      document.getElementById('content').innerHTML = `
+        <div class="error-box">
+          <strong>Unable to load data.</strong><br>
+          Please try again later or contact ${' office.ycrj@gmail.com'}.
+        </div>`;
+    });
+};
+</script>
+</body>
+</html>

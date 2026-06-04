@@ -513,15 +513,19 @@ function rDash() {
 
   const partners = [...new Set(UDINS.map(r => r['Partner']).filter(Boolean))].sort();
   const prows = partners.map(p => {
-    const pu = UDINS.filter(r => r['Partner'] === p);
-    const pt = pu.length, pc = pu.filter(r => getStatus(r['UDIN']) === 'Completed').length, pp = pt - pc;
-    const pct = pt ? Math.round((pc / pt) * 100) : 0;
-    const pi = PARTNERS.find(x => x.name === p);
+    const pu   = UDINS.filter(r => r['Partner'] === p);
+    const pt   = pu.length;
+    const pc   = pu.filter(r => getStatus(r['UDIN']) === 'Completed').length;
+    const pip  = pu.filter(r => getStatus(r['UDIN']) === 'In Progress').length;
+    const pp   = pu.filter(r => getStatus(r['UDIN']) === 'Pending').length;
+    const pct  = pt ? Math.round((pc / pt) * 100) : 0;
+    const pi   = PARTNERS.find(x => x.name === p);
     return `<tr>
       <td><span style="font-weight:600;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px" onclick="goToUDINList('${p}')">${p}</span></td>
       <td class="tmono" style="font-size:11px;color:var(--text3)">${pi ? pi.email : '—'}</td>
       <td style="text-align:center" class="tmono">${pt}</td>
       <td style="text-align:center"><span style="color:var(--green);font-weight:700;font-family:'DM Mono',monospace">${pc}</span></td>
+      <td style="text-align:center"><span style="color:var(--amber);font-weight:700;font-family:'DM Mono',monospace">${pip}</span></td>
       <td style="text-align:center"><span style="color:var(--red);font-weight:700;font-family:'DM Mono',monospace">${pp}</span></td>
       <td style="min-width:150px"><div class="prog-row"><div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div><span class="prog-val">${pct}%</span></div></td>
     </tr>`;
@@ -559,8 +563,8 @@ function rDash() {
       <div class="chead"><span class="ctitle">Partner-wise Summary</span><span class="csub">${partners.length} partner(s)</span></div>
       <div class="twrap">
         <table>
-          <thead><tr><th>Partner</th><th>Email</th><th style="text-align:center">Total</th><th style="text-align:center">Completed</th><th style="text-align:center">Pending</th><th>Completion</th></tr></thead>
-          <tbody>${prows || '<tr><td colspan="6" class="empty">No data yet. Click Sync to fetch from Google Sheet.</td></tr>'}</tbody>
+          <thead><tr><th>Partner</th><th>Email</th><th style="text-align:center">Total</th><th style="text-align:center">Completed</th><th style="text-align:center">In Progress</th><th style="text-align:center">Pending</th><th>Completion</th></tr></thead>
+          <tbody>${prows || '<tr><td colspan="7" class="empty">No data yet. Click Sync to fetch from Google Sheet.</td></tr>'}</tbody>
         </table>
       </div>
     </div>`;
@@ -805,6 +809,12 @@ function openAdminCL(udin) {
           </div>
         </div>`).join('')}
       </div>
+    </div>
+    <div style="padding:1rem 1.25rem;border-top:1px solid var(--border)">
+      <div class="clsect">Review Remarks (Optional)</div>
+      <textarea id="aclRemarks" rows="2" placeholder="Add any notes or remarks about this UDIN review..."
+        style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;color:var(--text);background:var(--surface);resize:vertical;font-family:'DM Sans',sans-serif"
+        oninput="updRemarks(this.value,'${udin}')">${rd.reviewRemarks||''}</textarea>
     </div>
     <div class="clfooter">
       <div class="clfoot-left" id="aclstatus">${rd.completed ? `Completed by <strong>${rd.completedBy}</strong> on ${fts(rd.completedDate)}` : 'Complete all checklist items and confirm financials to mark as done.'}</div>
@@ -1095,6 +1105,12 @@ function openCL(udin) {
         </div>`).join('')}
       </div>
     </div>
+    <div style="padding:1rem 1.25rem;border-top:1px solid var(--border)">
+      <div class="clsect">Review Remarks (Optional)</div>
+      <textarea id="clRemarks" rows="2" placeholder="Add any notes or remarks about this UDIN review..." 
+        style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;color:var(--text);background:var(--surface);resize:vertical;font-family:'DM Sans',sans-serif"
+        oninput="updRemarks(this.value,'${udin}')">${rd.reviewRemarks||''}</textarea>
+    </div>
     <div class="clfooter">
       <div class="clfoot-left" id="clstatus">${rd.completed ? `Completed by <strong>${rd.completedBy}</strong> on ${fts(rd.completedDate)}` : 'Complete all checklist items and confirm financials to mark as done.'}</div>
       <div class="clfoot-right">
@@ -1105,6 +1121,10 @@ function openCL(udin) {
   </div>`;
   area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
+
+window.updRemarks = function(val, udin) {
+  RD[udin].reviewRemarks = val;
+};
 
 window.updF = function(field, val, udin) {
   const old = RD[udin][field];
