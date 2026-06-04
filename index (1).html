@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peer Review Tool — YCRJ and Associates</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F3EF;--surface:#FFFFFF;--surface2:#F0EFE9;--surface3:#E8E6DE;
+  --border:#E0DED6;--border2:#C8C6BC;
+  --text:#1A1916;--text2:#5C5B56;--text3:#9B9990;
+  --accent:#1B4F8A;--accent-bg:#EAF0F8;--accent-border:#BDD0E8;
+  --green:#276B34;--green-bg:#E8F4EB;--green-border:#A3CEA9;
+  --red:#A82828;--red-bg:#FAE8E8;--red-border:#E8AAAA;
+  --amber:#7A4F00;--amber-bg:#FDF3E0;--amber-border:#E8C97A;
+  --r:10px;--r-sm:6px;--r-xs:4px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+.hidden{display:none!important}
+input,select,button,textarea{font-family:'DM Sans',sans-serif}
+
+/* ── LOGIN ── */
+#loginPage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;
+  background:var(--bg);
+  background-image:radial-gradient(ellipse at 15% 60%,rgba(27,79,138,.05) 0%,transparent 55%),
+                   radial-gradient(ellipse at 85% 20%,rgba(39,107,52,.04) 0%,transparent 50%)}
+.lcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2.25rem;width:100%;max-width:390px;box-shadow:var(--shadow-md)}
+.lbrand{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
+.lmark{width:38px;height:38px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;letter-spacing:-.5px;flex-shrink:0}
+.lfirm{font-size:15px;font-weight:600;line-height:1.2}
+.lsub{font-size:11px;color:var(--text3);margin-top:1px}
+.ltitle{font-size:22px;font-weight:600;margin-bottom:3px}
+.ldesc{font-size:13px;color:var(--text2);margin-bottom:1.75rem}
+.lfield{margin-bottom:1rem}
+.lfield label{display:block;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.lfield input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text);font-size:14px;transition:border-color .15s,box-shadow .15s}
+.lfield input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(27,79,138,.08)}
+.lbtn{width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);font-size:14px;font-weight:600;cursor:pointer;margin-top:.5rem;transition:background .15s}
+.lbtn:hover{background:#153d6d}
+.lerr{font-size:12px;color:var(--red);margin-top:8px;display:none}
+.lfooter{font-size:11px;color:var(--text3);text-align:center;margin-top:1.25rem}
+
+/* ── SHELL ── */
+#appShell{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:var(--shadow)}
+.tbrand{display:flex;align-items:center;gap:10px}
+.tmark{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px}
+.tname{font-size:14px;font-weight:600}
+.tsub{font-size:11px;color:var(--text3)}
+.tnav{display:flex;gap:2px}
+.ntab{padding:6px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all .15s}
+.ntab:hover{background:var(--surface2);color:var(--text)}
+.ntab.on{background:var(--accent-bg);color:var(--accent)}
+.tright{display:flex;align-items:center;gap:10px}
+.sync-pill{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sdot.spin{animation:blink 1s infinite;background:var(--amber)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.uchip{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--surface2);border-radius:20px;font-size:12px;font-weight:500}
+.uav{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rpip{font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600}
+.rpip.admin{background:var(--accent-bg);color:var(--accent)}
+.rpip.staff{background:var(--green-bg);color:var(--green)}
+.tlogout{font-size:12px;color:var(--text3);cursor:pointer;border:1px solid var(--border);background:transparent;padding:5px 10px;border-radius:var(--r-sm);transition:all .15s}
+.tlogout:hover{background:var(--surface2);color:var(--text)}
+.main{flex:1;padding:1.5rem;max-width:1440px;margin:0 auto;width:100%}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-accent:hover{background:#153d6d}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-green:hover{background:#1e5228}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-sync{background:var(--accent);color:#fff;border-color:var(--accent);display:flex;align-items:center;gap:6px;padding:8px 18px;font-size:13px;font-weight:600}
+.btn-sync:hover{background:#153d6d}
+
+/* ── METRICS ── */
+.mrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.25rem}
+.mcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem;box-shadow:var(--shadow)}
+.mlabel{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.mval{font-size:30px;font-weight:700;line-height:1;font-family:'DM Mono',monospace}
+.mval.blue{color:var(--accent)}.mval.green{color:var(--green)}.mval.red{color:var(--red)}.mval.amber{color:var(--amber)}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.25rem}
+.chead{padding:.875rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.ctitle{font-size:14px;font-weight:600}
+.csub{font-size:12px;color:var(--text3)}
+
+/* ── TABLES ── */
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr.clickable:hover{background:var(--surface2);cursor:pointer}
+tbody tr.row-active{background:var(--accent-bg)}
+tbody td{padding:8px 10px;vertical-align:middle}
+.tmono{font-family:'DM Mono',monospace;font-size:11px}
+.tclip{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-pending{background:var(--red-bg);color:var(--red)}
+.b-progress{background:var(--amber-bg);color:var(--amber)}
+.b-complete{background:var(--green-bg);color:var(--green)}
+
+/* ── FILTERS ── */
+.filters{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:.875rem 1.25rem;display:flex;gap:.75rem;align-items:flex-end;margin-bottom:1.25rem;flex-wrap:wrap;box-shadow:var(--shadow)}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
+.fg select{padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text);font-size:13px;min-width:140px;cursor:pointer}
+.fg select:focus{outline:none;border-color:var(--accent)}
+
+/* ── SEND BAR ── */
+.sendbar{background:linear-gradient(135deg,var(--accent-bg),#f4f8fd);border:1px solid var(--accent-border);border-radius:var(--r);padding:1.125rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem;box-shadow:var(--shadow)}
+.sbinfo h3{font-size:14px;font-weight:600;color:var(--accent)}
+.sbinfo p{font-size:12px;color:var(--text2);margin-top:2px}
+.slog{margin-top:10px;font-size:12px;padding:10px 14px;border-radius:var(--r-sm);white-space:pre-wrap;font-family:'DM Mono',monospace;line-height:1.7;display:none}
+.slog.ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.slog.err{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+
+/* ── SYNC BAR ── */
+.syncbar{background:linear-gradient(135deg,#f0f5f0,#f8faf8);border:1px solid var(--green-border);border-radius:var(--r);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem;box-shadow:var(--shadow)}
+.syncinfo h3{font-size:14px;font-weight:600;color:var(--green)}
+.syncinfo p{font-size:12px;color:var(--text2);margin-top:2px}
+.synclog{margin-top:10px;font-size:12px;padding:10px 14px;border-radius:var(--r-sm);font-family:'DM Mono',monospace;line-height:1.7;display:none}
+.synclog.ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.synclog.err{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+
+/* ── PROGRESS ── */
+.prog-row{display:flex;align-items:center;gap:8px}
+.prog-bg{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;min-width:60px}
+.prog-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s}
+.prog-val{font-size:12px;font-weight:600;font-family:'DM Mono',monospace;min-width:36px;text-align:right;color:var(--text2)}
+
+/* ── CHECKLIST PANEL ── */
+.clpanel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-top:1rem;box-shadow:var(--shadow-md);animation:slideDown .2s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.clhead{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--surface2),var(--surface));border-radius:var(--r) var(--r) 0 0}
+.clhinfo h3{font-size:15px;font-weight:600}
+.clhinfo p{font-size:12px;color:var(--text2);margin-top:3px}
+.clpct{display:flex;align-items:center;gap:10px}
+.clpbar{width:150px;height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.clpfill{height:100%;background:var(--green);border-radius:4px;transition:width .3s}
+.clpnum{font-size:14px;font-weight:700;font-family:'DM Mono',monospace;min-width:40px;text-align:right}
+.clbody{padding:1.25rem}
+.clsect{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+.clsect::after{content:'';flex:1;height:1px;background:var(--border)}
+.fingrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.ffield label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px}
+.ffield input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;color:var(--text);background:var(--surface);transition:border-color .15s;font-family:'DM Mono',monospace}
+.ffield input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(27,79,138,.06)}
+.ffield input.ferr{border-color:var(--red)}
+.clitems{display:flex;flex-direction:column}
+.clitem{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.clitem:last-child{border-bottom:none}
+.clinum{font-size:11px;color:var(--text3);width:22px;text-align:right;font-family:'DM Mono',monospace;flex-shrink:0}
+.cliname{flex:1;font-size:13px;line-height:1.4}
+.clibtns{display:flex;gap:4px;flex-shrink:0}
+.mbtn{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);transition:all .15s}
+.mbtn:hover{border-color:var(--border2);color:var(--text2)}
+.mbtn.yes.on{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.mbtn.no.on{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.mbtn.na.on{background:var(--surface2);color:var(--text2);border-color:var(--border2)}
+.clfooter{padding:1rem 1.25rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:0 0 var(--r) var(--r)}
+.clfoot-left{font-size:12px;color:var(--text3)}
+.clfoot-right{display:flex;gap:8px}
+
+/* ── SETUP ── */
+.setup-field label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px}
+.setup-field input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:12px;background:var(--surface);color:var(--text);font-family:'DM Mono',monospace}
+.setup-note{font-size:12px;color:var(--text2);line-height:1.7;margin-top:10px}
+.cred-table{width:100%;border-collapse:collapse;font-size:13px}
+.cred-table th{padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:var(--surface2)}
+.cred-table td{padding:9px 12px;border-bottom:1px solid var(--border)}
+.cred-table tr:last-child td{border-bottom:none}
+.pwdchip{font-family:'DM Mono',monospace;font-size:12px;background:var(--surface2);padding:2px 7px;border-radius:4px;border:1px solid var(--border)}
+.step-list{list-style:none;counter-reset:steps}
+.step-list li{counter-increment:steps;display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;font-size:13px;color:var(--text2)}
+.step-list li::before{content:counter(steps);min-width:22px;height:22px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 18px;border-radius:var(--r-sm);font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;box-shadow:var(--shadow-md)}
+.toast.show{opacity:1;transform:translateY(0)}
+
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--text3);font-size:13px}
+.msgbox{margin-top:10px;font-size:13px;padding:8px 12px;border-radius:var(--r-sm);display:none}
+.msgbox.ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.msgbox.err{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div>
+    <div class="lcard">
+      <div class="lbrand">
+        <div class="lmark">YR</div>
+        <div>
+          <div class="lfirm">YCRJ and Associates</div>
+          <div class="lsub">Chartered Accountants · Bangalore</div>
+        </div>
+      </div>
+      <div class="ltitle">Sign In</div>
+      <div class="ldesc">Access the Peer Review Management System</div>
+      <div class="lfield"><label>Username</label><input type="text" id="lusr" placeholder="Enter username" autocomplete="username"></div>
+      <div class="lfield"><label>Password</label><input type="password" id="lpwd" placeholder="Enter password" autocomplete="current-password"></div>
+      <div class="lerr" id="lerr">Invalid username or password.</div>
+      <button class="lbtn" onclick="doLogin()">Sign In →</button>
+    </div>
+    <div class="lfooter">YCRJ Peer Review System · v2.0</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appShell">
+  <div class="topbar">
+    <div class="tbrand">
+      <div class="tmark">YR</div>
+      <div><div class="tname">YCRJ Peer Review</div><div class="tsub">UDIN Checklist Management</div></div>
+    </div>
+    <div class="tnav" id="tnav"></div>
+    <div class="tright">
+      <div class="sync-pill"><div class="sdot" id="sdot"></div><span id="slabel">Ready</span></div>
+      <div class="uchip"><div class="uav" id="uav"></div><span id="uname"></span><span class="rpip" id="rpip"></span></div>
+      <button class="tlogout" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+  <div class="main" id="mainArea"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// CONFIGURATION
+// ══════════════════════════════════════════════
+const CFG = {
+  firm: 'YCRJ and Associates',
+  sender: 'office.ycrj@gmail.com',
+  sheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7daek7-QkykI3w9ZPq7is_7lemQhISfWloF5vkHVqpJLP3ItgSGD3Z8MEyr1wRd9Yxypjfp0Cu-gp/pub?gid=0&single=true&output=csv',
+  appsScriptUrl: '' // paste Apps Script Web App URL here after setup
+};
+
+// ══════════════════════════════════════════════
+// USERS
+// ══════════════════════════════════════════════
+const USERS = [
+  { username:'admin',        password:'peerreview@2026', role:'admin', name:'Admin' },
+  { username:'navyakuriachan', password:'Nk@Ycrj#7142',  role:'staff', name:'Navya Kuriachan', partners:['Vijayendra R Nayak'] },
+  { username:'ajayj',         password:'Aj@Ycrj#3856',   role:'staff', name:'Ajay J',           partners:['Yashavanth Khanderi'] }
+];
+
+// ══════════════════════════════════════════════
+// PARTNERS
+// ══════════════════════════════════════════════
+const PARTNERS = [
+  { name:'Vijayendra R Nayak',  email:'ajay.j.231@gmail.com' },
+  { name:'Yashavanth Khanderi', email:'navimk18@gmail.com'   }
+];
+
+// ══════════════════════════════════════════════
+// CHECKLISTS PER SERVICE
+// ══════════════════════════════════════════════
+const CHECKLISTS = {
+  'Statutory Audit':        ['Statutory Audit Appointment Letter','ADT 1','Engagement Letter','MRL','Checklists','Accountant\'s Compilation Report','Statutory Audit Report / Other Audit Reports','LFAR (Bank)','Financial Statements / Results','AGM Notice & Directors Report','Director\'s Declaration (Loan given is not out of Borrowed Funds)','DIR 8','MBP 1','Signed Audit Notes / ML','Tally data'],
+  'Statutory Branch Audit': ['Statutory Audit Appointment Letter','ADT 1','Engagement Letter','MRL','Checklists','Accountant\'s Compilation Report','Statutory Audit Report / Other Audit Reports','LFAR (Bank)','Financial Statements / Results','AGM Notice & Directors Report','Director\'s Declaration (Loan given is not out of Borrowed Funds)','DIR 8','MBP 1','Signed Audit Notes / ML','Tally data'],
+  'Central Statutory Audit':['Statutory Audit Appointment Letter','ADT 1','Engagement Letter','MRL','Checklists','Accountant\'s Compilation Report','Statutory Audit Report / Other Audit Reports','LFAR (Bank)','Financial Statements / Results','AGM Notice & Directors Report','Director\'s Declaration (Loan given is not out of Borrowed Funds)','DIR 8','MBP 1','Signed Audit Notes / ML','Tally data'],
+  'Limited Review':         ['Statutory Audit Appointment Letter','ADT 1','Engagement Letter','MRL','Checklists','Accountant\'s Compilation Report','Statutory Audit Report / Other Audit Reports','LFAR (Bank)','Financial Statements / Results','AGM Notice & Directors Report','Director\'s Declaration (Loan given is not out of Borrowed Funds)','DIR 8','MBP 1','Signed Audit Notes / ML','Tally data'],
+  'Tax Audit & ITR':        ['Tax Audit Appointment Letter (Signed copy)','Tax Audit MRL (Signed copy)','Computation Sheet','ITR','IT Form','Form 29B','Tax Audit Report (Form 3CD)','Form 10B / 10BB','Tally data'],
+  'Certificates':           ['Certificate Request Letter','Signed Copy of Certificate issued'],
+  'Internal Audit':         ['Appointment Letter','Signed Report','Signed Audit Notes / ML'],
+  'Concurrent Audit':       ['Appointment Letter','Signed Report','Signed Audit Notes / ML'],
+  'Stock Audit':            ['Appointment Letter','Signed Report'],
+  'Revenue Audit':          ['Appointment Letter','Signed Audit Report']
+};
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let CU = null; // current user
+let UDINS = []; // master UDIN list
+let RD = {}; // review data keyed by UDIN
+let AUDIT = []; // audit log
+
+// ══════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════
+function doLogin() {
+  const u = document.getElementById('lusr').value.trim();
+  const p = document.getElementById('lpwd').value;
+  const user = USERS.find(x => x.username === u && x.password === p);
+  if (!user) { document.getElementById('lerr').style.display = 'block'; return; }
+  startSession(user, true);
+}
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.getElementById('loginPage').style.display !== 'none') doLogin(); });
+
+function startSession(user, isNewLogin) {
+  CU = user;
+  // Save session to localStorage
+  try { localStorage.setItem('ycrj_session', JSON.stringify({ username: user.username })); } catch(e) {}
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appShell').style.display = 'flex';
+  document.getElementById('uav').textContent = user.name.charAt(0).toUpperCase();
+  document.getElementById('uname').textContent = user.name;
+  const rp = document.getElementById('rpip');
+  rp.textContent = user.role === 'admin' ? 'Admin' : 'Staff';
+  rp.className = 'rpip ' + user.role;
+  loadLocal();
+  buildNav();
+  fetchUDINs(false);
+  if (isNewLogin) log('LOGIN', null, `${user.name} logged in`);
+}
+
+function doLogout() {
+  CU = null;
+  try { localStorage.removeItem('ycrj_session'); } catch(e) {}
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('lusr').value = '';
+  document.getElementById('lpwd').value = '';
+  document.getElementById('lerr').style.display = 'none';
+}
+
+// Auto-restore session on page load
+window.addEventListener('load', () => {
+  try {
+    const saved = localStorage.getItem('ycrj_session');
+    if (saved) {
+      const { username } = JSON.parse(saved);
+      const user = USERS.find(x => x.username === username);
+      if (user) { startSession(user, false); return; }
+    }
+  } catch(e) {}
+  // No saved session — show login
+  document.getElementById('loginPage').style.display = 'flex';
+});
+
+// ══════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════
+function buildNav() {
+  const nav = document.getElementById('tnav');
+  if (CU.role === 'admin') {
+    nav.innerHTML = `
+      <button class="ntab on" onclick="setTab(this,'rDash')">Dashboard</button>
+      <button class="ntab" id="udinListTab" onclick="setTab(this,'rAdminUDINs')">UDIN List</button>
+      <button class="ntab" onclick="setTab(this,'rSetup')">Setup</button>`;
+    rDash();
+  } else {
+    nav.innerHTML = `<button class="ntab on" onclick="setTab(this,'rReview')">Review UDINs</button>`;
+    rReview();
+  }
+}
+function setTab(el, fn) {
+  document.querySelectorAll('.ntab').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  window[fn]();
+}
+
+// ══════════════════════════════════════════════
+// FETCH UDINS FROM GOOGLE SHEET
+// ══════════════════════════════════════════════
+function fetchUDINs(isManualSync) {
+  setSyncing(true);
+  const before = UDINS.length;
+  fetch(CFG.sheetUrl + '&cachebust=' + Date.now())
+    .then(r => r.text())
+    .then(csv => {
+      const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true });
+      const rows = parsed.data.filter(r => r['UDIN'] && String(r['UDIN']).trim() !== '');
+      // Merge — preserve existing review data, add new entries
+      const existing = new Map(UDINS.map(u => [u['UDIN'], u]));
+      rows.forEach(r => {
+        const udin = String(r['UDIN']).trim();
+        r['UDIN'] = udin;
+        existing.set(udin, { ...existing.get(udin), ...r });
+      });
+      UDINS = Array.from(existing.values());
+      const added = UDINS.length - before;
+      setSyncing(false);
+      const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      setSlabel('Synced ' + now);
+      if (isManualSync) {
+        showSyncResult(added, rows.length);
+        if (CU.role === 'admin') rDash();
+      }
+      saveLocal();
+    })
+    .catch(err => {
+      setSyncing(false);
+      setSlabel('Sync failed');
+      if (isManualSync) showSyncResult(-1, 0, err.message);
+    });
+}
+
+function showSyncResult(added, total, errMsg) {
+  const el = document.getElementById('synclog');
+  if (!el) return;
+  if (errMsg) {
+    el.textContent = '✗ Sync failed: ' + errMsg;
+    el.className = 'synclog err';
+  } else {
+    el.textContent = added > 0
+      ? `✓ Sync complete — ${added} new UDIN(s) added. Total records: ${total}.`
+      : `✓ Sync complete — No new entries. Total records: ${total}.`;
+    el.className = 'synclog ok';
+  }
+  el.style.display = 'block';
+}
+
+function setSyncing(v) { document.getElementById('sdot').className = 'sdot' + (v ? ' spin' : ''); }
+function setSlabel(t) { document.getElementById('slabel').textContent = t; }
+
+// ══════════════════════════════════════════════
+// LOCAL STORAGE
+// ══════════════════════════════════════════════
+function loadLocal() {
+  try {
+    const r = localStorage.getItem('ycrj_rd'); if (r) RD = JSON.parse(r);
+    const a = localStorage.getItem('ycrj_al'); if (a) AUDIT = JSON.parse(a);
+  } catch(e) {}
+}
+function saveLocal() {
+  try {
+    localStorage.setItem('ycrj_rd', JSON.stringify(RD));
+    localStorage.setItem('ycrj_al', JSON.stringify(AUDIT));
+  } catch(e) {}
+  pushToSheets();
+}
+function pushToSheets() {
+  if (!CFG.appsScriptUrl) return;
+  fetch(CFG.appsScriptUrl, {
+    method: 'POST',
+    body: JSON.stringify({ type: 'review', data: RD, audit: AUDIT, udins: UDINS }),
+    headers: { 'Content-Type': 'text/plain' }
+  }).catch(() => {});
+}
+
+// ══════════════════════════════════════════════
+// AUDIT LOG
+// ══════════════════════════════════════════════
+function log(action, udin, detail, oldV, newV) {
+  AUDIT.unshift({ ts: new Date().toISOString(), user: CU ? CU.username : 'system', action, udin: udin || '', detail, oldVal: oldV || '', newVal: newV || '' });
+  if (AUDIT.length > 1000) AUDIT = AUDIT.slice(0, 1000);
+}
+
+// ══════════════════════════════════════════════
+// STATUS HELPERS
+// ══════════════════════════════════════════════
+function getStatus(udin) {
+  const rd = RD[udin];
+  if (!rd) return 'Pending';
+  if (rd.completed) return 'Completed';
+  const hasAny = Object.keys(rd.items || {}).length > 0 || rd.turnover || rd.borrowings || rd.networth;
+  return hasAny ? 'In Progress' : 'Pending';
+}
+function badge(s) {
+  const c = { Pending:'b-pending', 'In Progress':'b-progress', Completed:'b-complete' };
+  return `<span class="badge ${c[s]||'b-pending'}">${s}</span>`;
+}
+function inr(v) { return v ? '₹' + Number(v).toLocaleString('en-IN') : '—'; }
+function fts(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) + ' ' +
+         d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ══════════════════════════════════════════════
+// ADMIN DASHBOARD
+// ══════════════════════════════════════════════
+function rDash() {
+  const total = UDINS.length;
+  const completed = UDINS.filter(r => getStatus(r['UDIN']) === 'Completed').length;
+  const inprog = UDINS.filter(r => getStatus(r['UDIN']) === 'In Progress').length;
+  const pending = UDINS.filter(r => getStatus(r['UDIN']) === 'Pending').length;
+  const todayKey = new Date().toDateString();
+  const todayDone = UDINS.filter(r => { const rd = RD[r['UDIN']]; return rd && rd.completedDate && new Date(rd.completedDate).toDateString() === todayKey; }).length;
+  const pendingPct = total ? Math.round((pending / total) * 100) : 0;
+
+  const partners = [...new Set(UDINS.map(r => r['Partner']).filter(Boolean))].sort();
+  const prows = partners.map(p => {
+    const pu = UDINS.filter(r => r['Partner'] === p);
+    const pt = pu.length, pc = pu.filter(r => getStatus(r['UDIN']) === 'Completed').length, pp = pt - pc;
+    const pct = pt ? Math.round((pc / pt) * 100) : 0;
+    const pi = PARTNERS.find(x => x.name === p);
+    return `<tr>
+      <td><span style="font-weight:600;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px" onclick="goToUDINList('${p}')">${p}</span></td>
+      <td class="tmono" style="font-size:11px;color:var(--text3)">${pi ? pi.email : '—'}</td>
+      <td style="text-align:center" class="tmono">${pt}</td>
+      <td style="text-align:center"><span style="color:var(--green);font-weight:700;font-family:'DM Mono',monospace">${pc}</span></td>
+      <td style="text-align:center"><span style="color:var(--red);font-weight:700;font-family:'DM Mono',monospace">${pp}</span></td>
+      <td style="min-width:150px"><div class="prog-row"><div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div><span class="prog-val">${pct}%</span></div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('mainArea').innerHTML = `
+    <div class="mrow">
+      <div class="mcard"><div class="mlabel">Total UDINs</div><div class="mval blue">${total}</div></div>
+      <div class="mcard"><div class="mlabel">Completed</div><div class="mval green">${completed}</div></div>
+      <div class="mcard"><div class="mlabel">In Progress</div><div class="mval amber">${inprog}</div></div>
+      <div class="mcard"><div class="mlabel">Pending</div><div class="mval red">${pending}</div></div>
+      <div class="mcard"><div class="mlabel">Done Today</div><div class="mval green">${todayDone}</div></div>
+      <div class="mcard"><div class="mlabel">Pending %</div><div class="mval red">${pendingPct}%</div></div>
+    </div>
+
+    <div class="syncbar">
+      <div class="syncinfo">
+        <h3>🔄 Sync UDIN Master</h3>
+        <p>Fetches latest data from Google Sheet. New entries are added automatically without affecting existing review progress.</p>
+      </div>
+      <button class="btn btn-sync" onclick="doSync()">↺ Sync Now</button>
+    </div>
+    <div class="synclog" id="synclog"></div>
+
+    <div class="sendbar">
+      <div class="sbinfo">
+        <h3>📧 Send End-of-Day Report</h3>
+        <p>Sends completion summary to each partner immediately. Auto-sends at 5:15 PM IST via Apps Script.</p>
+      </div>
+      <button class="btn btn-accent" onclick="sendReports()" id="btnSend" style="padding:8px 18px;font-size:13px;font-weight:600">Send to All Partners</button>
+    </div>
+    <div class="slog" id="slog"></div>
+
+    <div class="card">
+      <div class="chead"><span class="ctitle">Partner-wise Summary</span><span class="csub">${partners.length} partner(s)</span></div>
+      <div class="twrap">
+        <table>
+          <thead><tr><th>Partner</th><th>Email</th><th style="text-align:center">Total</th><th style="text-align:center">Completed</th><th style="text-align:center">Pending</th><th>Completion</th></tr></thead>
+          <tbody>${prows || '<tr><td colspan="6" class="empty">No data yet. Click Sync to fetch from Google Sheet.</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function doSync() {
+  const btn = document.querySelector('.btn-sync');
+  if (btn) { btn.disabled = true; btn.textContent = '↺ Syncing...'; }
+  fetchUDINs(true);
+  setTimeout(() => { if (btn) { btn.disabled = false; btn.textContent = '↺ Sync Now'; } }, 4000);
+}
+
+// ══════════════════════════════════════════════
+// SEND EMAILS
+// ══════════════════════════════════════════════
+async function sendReports() {
+  if (!CFG.appsScriptUrl) {
+    showSlog('Apps Script URL not configured. Go to Setup tab and save your Apps Script URL first.', 'err');
+    return;
+  }
+  const btn = document.getElementById('btnSend');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  const today = new Date();
+  const todayStr = today.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  const todayKey = today.toDateString();
+  const payload = PARTNERS.map(p => {
+    const pu = UDINS.filter(r => r['Partner'] === p.name);
+    const total = pu.length;
+    const completed = pu.filter(r => getStatus(r['UDIN']) === 'Completed').length;
+    const pending = total - completed;
+    const todayDone = pu.filter(r => { const rd = RD[r['UDIN']]; return rd && rd.completedDate && new Date(rd.completedDate).toDateString() === todayKey; }).length;
+    const pendingPct = total ? Math.round((pending / total) * 100) : 0;
+    const completedList = pu.filter(r => getStatus(r['UDIN']) === 'Completed').map(r => `${r['UDIN']} — ${r['Client Name'] || ''} (${r['Sub-Type'] || ''})`);
+    const pendingList = pu.filter(r => getStatus(r['UDIN']) !== 'Completed').map(r => `${r['UDIN']} — ${r['Client Name'] || ''} (${r['Sub-Type'] || ''})`);
+    return { name: p.name, email: p.email, total, completed, pending, todayDone, pendingPct, completedList, pendingList, date: todayStr };
+  });
+  try {
+    const res = await fetch(CFG.appsScriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({ type: 'email', partners: payload, firm: CFG.firm, sender: CFG.sender }),
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    await res.text();
+    showSlog('✓ Reports sent successfully to all partners.', 'ok');
+    log('EMAIL_SENT', null, `End-of-day reports sent to ${PARTNERS.length} partners by ${CU.username}`);
+    toast('Reports sent!');
+  } catch(e) {
+    showSlog('✗ Error: ' + e.message, 'err');
+  }
+  btn.disabled = false; btn.textContent = 'Send to All Partners';
+}
+
+function showSlog(msg, type) {
+  const el = document.getElementById('slog'); if (!el) return;
+  el.textContent = msg; el.className = 'slog ' + type; el.style.display = 'block';
+}
+
+// ══════════════════════════════════════════════
+// ADMIN UDIN LIST TAB
+// ══════════════════════════════════════════════
+function goToUDINList(partnerName) {
+  // Switch to UDIN List tab
+  document.querySelectorAll('.ntab').forEach(b => b.classList.remove('on'));
+  document.getElementById('udinListTab').classList.add('on');
+  rAdminUDINs(partnerName);
+}
+
+function rAdminUDINs(prefilterPartner) {
+  const partners = [...new Set(UDINS.map(r => r['Partner']).filter(Boolean))].sort();
+  const selPartner = prefilterPartner || '';
+  const selFY = '';
+  const selStatus = '';
+
+  document.getElementById('mainArea').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+      <button class="btn" onclick="document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));document.querySelector('.ntab').classList.add('on');rDash();" 
+        style="display:flex;align-items:center;gap:6px;font-weight:500">
+        ← Back to Dashboard
+      </button>
+      <div style="font-size:14px;font-weight:600;color:var(--text2)">UDIN List</div>
+    </div>
+
+    <div class="filters">
+      <div class="fg"><label>Partner</label>
+        <select id="aPartner" onchange="applyAdminF()">
+          <option value="">All Partners</option>
+          ${partners.map(p => `<option value="${p}" ${p===selPartner?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>FY Period</label>
+        <select id="aFY" onchange="applyAdminF()">
+          <option value="">All</option>
+          <option>2023-24</option><option>2024-25</option><option>2025-26</option>
+        </select>
+      </div>
+      <div class="fg"><label>Status</label>
+        <select id="aSt" onchange="applyAdminF()">
+          <option value="">All</option>
+          <option>Pending</option><option>In Progress</option><option>Completed</option>
+        </select>
+      </div>
+      <button class="btn" onclick="applyAdminF()">Apply</button>
+      <button class="btn" onclick="resetAdminF()">Reset</button>
+      <div style="margin-left:auto;font-size:12px;color:var(--text3);align-self:center" id="adminUdinCount"></div>
+    </div>
+
+    <div class="card">
+      <div class="chead">
+        <span class="ctitle" id="adminListTitle">UDIN List</span>
+        <span class="csub" id="adminUdinCnt"></span>
+      </div>
+      <div class="twrap">
+        <table>
+          <thead><tr>
+            <th>Sl.No</th><th>Partner</th><th>FY</th><th>UDIN</th><th>Date of Signing</th>
+            <th>Client Name</th><th>Document Type</th><th>Sub-Type</th>
+            <th>Doc Description</th><th>Remarks</th>
+            <th>Turnover</th><th>Borrowings</th><th>Networth</th>
+            <th>Peer Review Tagging</th><th>Status</th>
+          </tr></thead>
+          <tbody id="adminUbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="adminClArea"></div>`;
+
+  // Apply prefilter
+  if (prefilterPartner) document.getElementById('aPartner').value = prefilterPartner;
+  drawAdminTable();
+}
+
+function applyAdminF() {
+  drawAdminTable();
+}
+
+function resetAdminF() {
+  ['aPartner','aFY','aSt'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  drawAdminTable();
+}
+
+function drawAdminTable() {
+  const partner = (document.getElementById('aPartner')||{}).value || '';
+  const fy      = (document.getElementById('aFY')||{}).value || '';
+  const status  = (document.getElementById('aSt')||{}).value || '';
+
+  let data = [...UDINS];
+  if (partner) data = data.filter(r => r['Partner'] === partner);
+  if (fy)      data = data.filter(r => r['FY'] === fy);
+  if (status)  data = data.filter(r => getStatus(r['UDIN']) === status);
+
+  const cnt = document.getElementById('adminUdinCnt');
+  if (cnt) cnt.textContent = data.length + ' record(s)';
+  const title = document.getElementById('adminListTitle');
+  if (title) title.textContent = partner ? `${partner} — UDIN List` : 'All Partners — UDIN List';
+
+  const tbody = document.getElementById('adminUbody');
+  if (!tbody) return;
+
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="15" class="empty">No records match the filters.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(r => {
+    const rd = RD[r['UDIN']] || {};
+    return `<tr class="clickable" onclick="openAdminCL('${r['UDIN']}')">
+      <td class="tmono">${r['Sl.No']||''}</td>
+      <td style="font-weight:500">${r['Partner']||''}</td>
+      <td class="tmono">${r['FY']||''}</td>
+      <td class="tmono" style="font-size:11px">${r['UDIN']||''}</td>
+      <td style="white-space:nowrap">${r['Date of signing']||''}</td>
+      <td class="tclip">${r['Client Name']||''}</td>
+      <td class="tclip">${r['Document Type']||''}</td>
+      <td class="tclip">${r['Sub-Type']||''}</td>
+      <td class="tclip">${r['Document Description']||''}</td>
+      <td class="tclip">${r['Remarks']||''}</td>
+      <td class="tmono" style="font-size:11px">${inr(rd.turnover !== undefined && rd.turnover !== '' ? rd.turnover : r['Turnover'])}</td>
+      <td class="tmono" style="font-size:11px">${inr(rd.borrowings !== undefined && rd.borrowings !== '' ? rd.borrowings : r['Borrowings'])}</td>
+      <td class="tmono" style="font-size:11px">${inr(rd.networth !== undefined && rd.networth !== '' ? rd.networth : r['Networth'])}</td>
+      <td><span style="font-size:12px;color:var(--accent);font-weight:500">${r['Peer Review Tagging']||'—'}</span></td>
+      <td>${badge(getStatus(r['UDIN']))}</td>
+    </tr>`;
+  }).join('');
+}
+
+function openAdminCL(udin) {
+  const rec = UDINS.find(r => r['UDIN'] === udin);
+  if (!rec) return;
+  const svc   = rec['Sub-Type'] || '';
+  const items = CHECKLISTS[svc] || [];
+  if (!RD[udin]) RD[udin] = { items:{}, turnover:'', borrowings:'', networth:'', completed:false, completedDate:null, completedBy:'' };
+  const rd = RD[udin];
+
+  // Pre-fill financials from sheet if blank
+  if (rd.turnover   === '' && rec['Turnover'])   rd.turnover   = rec['Turnover'];
+  if (rd.borrowings === '' && rec['Borrowings']) rd.borrowings = rec['Borrowings'];
+  if (rd.networth   === '' && rec['Networth'])   rd.networth   = rec['Networth'];
+
+  log('OPEN', udin, `${CU.username} (admin) opened UDIN for review`);
+  const area = document.getElementById('adminClArea');
+  if (!area) return;
+
+  function pct() {
+    const marked = items.filter((_, i) => rd.items[i]).length;
+    const finOk  = rd.turnover && rd.borrowings && rd.networth ? 1 : 0;
+    return items.length ? Math.round(((marked + finOk) / (items.length + 1)) * 100) : (finOk ? 100 : 0);
+  }
+  function canComplete() {
+    return items.every((_, i) => rd.items[i]) && rd.turnover && rd.borrowings && rd.networth;
+  }
+
+  area.innerHTML = `<div class="clpanel">
+    <div class="clhead">
+      <div class="clhinfo">
+        <h3>${rec['Client Name']||''} — ${svc}</h3>
+        <p>UDIN: <span class="tmono">${udin}</span> &nbsp;·&nbsp; Partner: ${rec['Partner']||''} &nbsp;·&nbsp; ${rec['FY']||''} &nbsp;·&nbsp;
+          <span style="color:var(--accent);font-weight:500">Peer Review Tagging: ${rec['Peer Review Tagging']||'—'}</span></p>
+      </div>
+      <div class="clpct">
+        <div class="clpbar"><div class="clpfill" id="apfill" style="width:${pct()}%"></div></div>
+        <span class="clpnum" id="apnum">${pct()}%</span>
+      </div>
+    </div>
+    <div class="clbody">
+      <div class="clsect">Financial Details — Verify &amp; Confirm (Mandatory)</div>
+      <div class="fingrid">
+        <div class="ffield"><label>Turnover (₹)</label><input type="number" id="afT" value="${rd.turnover||''}" placeholder="Enter amount" oninput="updAF('turnover',this.value,'${udin}')"></div>
+        <div class="ffield"><label>Borrowings (₹)</label><input type="number" id="afB" value="${rd.borrowings||''}" placeholder="Enter amount" oninput="updAF('borrowings',this.value,'${udin}')"></div>
+        <div class="ffield"><label>Networth (₹)</label><input type="number" id="afN" value="${rd.networth||''}" placeholder="Enter amount" oninput="updAF('networth',this.value,'${udin}')"></div>
+      </div>
+      <div class="clsect">Checklist — ${svc} (${items.length} items)</div>
+      <div class="clitems">
+        ${items.map((item, i) => `
+        <div class="clitem" id="aci${i}">
+          <span class="clinum">${i+1}</span>
+          <span class="cliname">${item}</span>
+          <div class="clibtns">
+            <button class="mbtn yes ${rd.items[i]==='Yes'?'on':''}" onclick="markAI(${i},'Yes','${udin}')">Yes</button>
+            <button class="mbtn no ${rd.items[i]==='No'?'on':''}" onclick="markAI(${i},'No','${udin}')">No</button>
+            <button class="mbtn na ${rd.items[i]==='NA'?'on':''}" onclick="markAI(${i},'NA','${udin}')">NA</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="clfooter">
+      <div class="clfoot-left" id="aclstatus">${rd.completed ? `Completed by <strong>${rd.completedBy}</strong> on ${fts(rd.completedDate)}` : 'Complete all checklist items and confirm financials to mark as done.'}</div>
+      <div class="clfoot-right">
+        <button class="btn" onclick="saveAP('${udin}')">Save Progress</button>
+        <button class="btn btn-green" id="abtnC" onclick="markADone('${udin}')" ${canComplete()?'':'disabled'}>${rd.completed?'✓ Re-mark Complete':'Mark as Complete'}</button>
+      </div>
+    </div>
+  </div>`;
+  area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+window.updAF = function(field, val, udin) {
+  const old = RD[udin][field];
+  RD[udin][field] = val;
+  if (String(old) !== String(val)) log('EDIT_FIN', udin, `${CU.username} (admin) updated ${field}`, old||'—', val||'—');
+  refreshACL(udin);
+};
+window.markAI = function(idx, val, udin) {
+  const svc      = (UDINS.find(r => r['UDIN'] === udin)||{})['Sub-Type']||'';
+  const itemName = (CHECKLISTS[svc]||[])[idx]||'Item '+(idx+1);
+  const old      = RD[udin].items[idx];
+  RD[udin].items[idx] = val;
+  if (old !== val) log('MARK', udin, `${CU.username} (admin) marked "${itemName}" as ${val}`, old||'—', val);
+  refreshACL(udin);
+};
+window.saveAP = function(udin) {
+  RD[udin].savedBy = CU.username;
+  RD[udin].savedAt = new Date().toISOString();
+  saveLocal();
+  drawAdminTable();
+  log('SAVE', udin, `${CU.username} (admin) saved progress`);
+  toast('Progress saved ✓');
+};
+window.markADone = function(udin) {
+  const wasCompleted    = RD[udin].completed;
+  RD[udin].completed    = true;
+  RD[udin].completedBy  = CU.username;
+  RD[udin].completedDate= new Date().toISOString();
+  saveLocal();
+  drawAdminTable();
+  log(wasCompleted?'RE_COMPLETE':'COMPLETE', udin, `${CU.username} (admin) marked UDIN as complete`);
+  toast('UDIN marked as Completed ✓');
+  const bc = document.getElementById('abtnC');
+  if (bc) { bc.textContent = '✓ Re-mark Complete'; bc.disabled = false; }
+  const cs = document.getElementById('aclstatus');
+  if (cs) cs.innerHTML = `Completed by <strong>${CU.username}</strong> on ${fts(new Date().toISOString())}`;
+};
+
+function refreshACL(udin) {
+  const rd    = RD[udin];
+  const svc   = (UDINS.find(r => r['UDIN'] === udin)||{})['Sub-Type']||'';
+  const items = CHECKLISTS[svc]||[];
+  function pct() {
+    const marked = items.filter((_,i) => rd.items[i]).length;
+    const finOk  = rd.turnover && rd.borrowings && rd.networth ? 1 : 0;
+    return items.length ? Math.round(((marked+finOk)/(items.length+1))*100) : (finOk?100:0);
+  }
+  const pf = document.getElementById('apfill'); if (pf) pf.style.width = pct()+'%';
+  const pn = document.getElementById('apnum');  if (pn) pn.textContent = pct()+'%';
+  items.forEach((_,i) => {
+    const ci = document.getElementById('aci'+i); if (!ci) return;
+    ci.querySelectorAll('.mbtn').forEach(b => b.classList.remove('on'));
+    const v = rd.items[i];
+    if (v) { const b = ci.querySelector('.mbtn.'+v.toLowerCase()); if(b) b.classList.add('on'); }
+  });
+  const bc = document.getElementById('abtnC');
+  if (bc) bc.disabled = !(items.every((_,i) => rd.items[i]) && rd.turnover && rd.borrowings && rd.networth);
+}
+
+// ══════════════════════════════════════════════
+// SETUP TAB
+// ══════════════════════════════════════════════
+function rSetup() {
+  document.getElementById('mainArea').innerHTML = `
+    <div class="card">
+      <div class="chead"><span class="ctitle">Apps Script Configuration</span></div>
+      <div style="padding:1.25rem">
+        <div class="setup-field" style="max-width:560px;margin-bottom:1rem">
+          <label>Apps Script Web App URL</label>
+          <input type="text" id="asUrl" value="${CFG.appsScriptUrl}" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <button class="btn btn-accent" onclick="saveAsUrl()">Save URL</button>
+        <div class="msgbox" id="asMsg"></div>
+        <div class="setup-note" style="margin-top:1rem">
+          This URL enables: (1) saving review data to Google Sheets, (2) writing the audit log, (3) sending emails manually from dashboard.<br>
+          The daily 5:15 PM auto-email runs from the Apps Script time trigger — no browser needed.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chead"><span class="ctitle">Staff Credentials</span></div>
+      <div style="padding:1.25rem">
+        <table class="cred-table">
+          <thead><tr><th>#</th><th>Name</th><th>Username</th><th>Password</th><th>Role</th><th>Assigned Partner(s)</th></tr></thead>
+          <tbody>${USERS.map((u,i) => `<tr>
+            <td>${i+1}</td><td style="font-weight:600">${u.name}</td>
+            <td class="tmono">${u.username}</td>
+            <td><span class="pwdchip">${u.password}</span></td>
+            <td><span class="rpip ${u.role}">${u.role}</span></td>
+            <td style="font-size:12px;color:var(--text2)">${u.partners ? u.partners.join(', ') : 'All'}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chead"><span class="ctitle">Partner Email Directory</span></div>
+      <div style="padding:1.25rem">
+        <table class="cred-table">
+          <thead><tr><th>#</th><th>Partner Name</th><th>Email Address</th></tr></thead>
+          <tbody>${PARTNERS.map((p,i) => `<tr>
+            <td>${i+1}</td><td style="font-weight:600">${p.name}</td>
+            <td class="tmono" style="font-size:12px">${p.email}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+        <div style="font-size:11px;color:var(--text3);margin-top:10px">To update emails, edit the PARTNERS array in index.html</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chead"><span class="ctitle">Setup Steps</span></div>
+      <div style="padding:1.25rem">
+        <ul class="step-list">
+          <li>Your Google Sheet (UDIN_Master) is already published. The tool fetches it directly on login and on manual sync.</li>
+          <li>In Google Sheet → Extensions → Apps Script → paste Code.gs → Deploy as Web App (Execute as Me, Anyone can access) → copy URL.</li>
+          <li>Paste the Apps Script Web App URL above → Save.</li>
+          <li>In Apps Script → Triggers → Add Trigger → Function: dailyReport → Time-driven → Day timer → 5–6 PM → Save.</li>
+          <li>Upload index.html to GitHub (private repo) → Settings → Pages → Enable → your tool is live.</li>
+        </ul>
+      </div>
+    </div>`;
+}
+
+function saveAsUrl() {
+  CFG.appsScriptUrl = document.getElementById('asUrl').value.trim();
+  const el = document.getElementById('asMsg');
+  el.textContent = CFG.appsScriptUrl ? '✓ URL saved successfully.' : 'URL cleared.';
+  el.className = 'msgbox ' + (CFG.appsScriptUrl ? 'ok' : 'err');
+  el.style.display = 'block';
+}
+
+// ══════════════════════════════════════════════
+// STAFF REVIEW
+// ══════════════════════════════════════════════
+function rReview() {
+  const myPartners = CU.partners || [];
+  const myUDINs = UDINS.filter(r => myPartners.includes(r['Partner']));
+  document.getElementById('mainArea').innerHTML = `
+    <div class="filters">
+      <div class="fg"><label>FY Period</label>
+        <select id="fFY"><option value="">All</option><option>2023-24</option><option>2024-25</option><option>2025-26</option></select></div>
+      <div class="fg"><label>Status</label>
+        <select id="fSt"><option value="">All</option><option>Pending</option><option>In Progress</option><option>Completed</option></select></div>
+      <button class="btn" onclick="applyF()">Apply</button>
+      <button class="btn" onclick="resetF()">Reset</button>
+      <div style="margin-left:auto;font-size:12px;color:var(--text3);align-self:center">
+        Reviewing: <strong style="color:var(--text)">${myPartners.join(', ')}</strong>
+      </div>
+    </div>
+    <div class="card">
+      <div class="chead">
+        <span class="ctitle">UDIN List</span>
+        <span class="csub" id="ucnt">${myUDINs.length} record(s)</span>
+      </div>
+      <div class="twrap">
+        <table>
+          <thead><tr>
+            <th>Sl.No</th><th>Partner</th><th>FY</th><th>UDIN</th><th>Date of Signing</th>
+            <th>Client Name</th><th>Document Type</th><th>Sub-Type</th>
+            <th>Doc Description</th><th>Remarks</th>
+            <th>Turnover</th><th>Borrowings</th><th>Networth</th><th>Status</th>
+          </tr></thead>
+          <tbody id="ubody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="clarea"></div>`;
+  drawTable(myUDINs);
+}
+
+function applyF() {
+  const myPartners = CU.partners || [];
+  let data = UDINS.filter(r => myPartners.includes(r['Partner']));
+  const fy = document.getElementById('fFY').value;
+  const st = document.getElementById('fSt').value;
+  if (fy) data = data.filter(r => r['FY'] === fy);
+  if (st) data = data.filter(r => getStatus(r['UDIN']) === st);
+  drawTable(data);
+}
+
+function resetF() {
+  ['fFY','fSt'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  rReview();
+}
+
+function drawTable(data) {
+  const cnt = document.getElementById('ucnt');
+  if (cnt) cnt.textContent = data.length + ' record(s)';
+  const tbody = document.getElementById('ubody');
+  if (!tbody) return;
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="14" class="empty">No records match the filters.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(r => {
+    const rd = RD[r['UDIN']] || {};
+    return `<tr class="clickable" onclick="openCL('${r['UDIN']}')">
+      <td class="tmono">${r['Sl.No']||''}</td>
+      <td>${r['Partner']||''}</td>
+      <td class="tmono">${r['FY']||''}</td>
+      <td class="tmono" style="font-size:11px">${r['UDIN']||''}</td>
+      <td style="white-space:nowrap">${r['Date of signing']||''}</td>
+      <td class="tclip">${r['Client Name']||''}</td>
+      <td class="tclip">${r['Document Type']||''}</td>
+      <td class="tclip">${r['Sub-Type']||''}</td>
+      <td class="tclip">${r['Document Description']||''}</td>
+      <td class="tclip">${r['Remarks']||''}</td>
+      <td class="tmono" style="font-size:11px">${inr(rd.turnover !== undefined ? rd.turnover : r['Turnover'])}</td>
+      <td class="tmono" style="font-size:11px">${inr(rd.borrowings !== undefined ? rd.borrowings : r['Borrowings'])}</td>
+      <td class="tmono" style="font-size:11px">${inr(rd.networth !== undefined ? rd.networth : r['Networth'])}</td>
+      <td>${badge(getStatus(r['UDIN']))}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// CHECKLIST
+// ══════════════════════════════════════════════
+function openCL(udin) {
+  const rec = UDINS.find(r => r['UDIN'] === udin);
+  if (!rec) return;
+  const svc = rec['Sub-Type'] || '';
+  const items = CHECKLISTS[svc] || [];
+  if (!RD[udin]) RD[udin] = { items:{}, turnover:'', borrowings:'', networth:'', completed:false, completedDate:null, completedBy:'' };
+  const rd = RD[udin];
+
+  // Pre-fill financials from sheet if not yet edited
+  if (rd.turnover === '' && rec['Turnover']) rd.turnover = rec['Turnover'];
+  if (rd.borrowings === '' && rec['Borrowings']) rd.borrowings = rec['Borrowings'];
+  if (rd.networth === '' && rec['Networth']) rd.networth = rec['Networth'];
+
+  log('OPEN', udin, `${CU.username} opened UDIN for review`);
+  const area = document.getElementById('clarea');
+  if (!area) return;
+
+  function pct() {
+    const marked = items.filter((_, i) => rd.items[i]).length;
+    const finOk = rd.turnover && rd.borrowings && rd.networth ? 1 : 0;
+    return items.length ? Math.round(((marked + finOk) / (items.length + 1)) * 100) : (finOk ? 100 : 0);
+  }
+  function canComplete() {
+    return items.every((_, i) => rd.items[i]) && rd.turnover && rd.borrowings && rd.networth;
+  }
+
+  area.innerHTML = `<div class="clpanel">
+    <div class="clhead">
+      <div class="clhinfo">
+        <h3>${rec['Client Name']||''} — ${svc}</h3>
+        <p>UDIN: <span class="tmono">${udin}</span> &nbsp;·&nbsp; Partner: ${rec['Partner']||''} &nbsp;·&nbsp; ${rec['FY']||''}</p>
+      </div>
+      <div class="clpct">
+        <div class="clpbar"><div class="clpfill" id="pfill" style="width:${pct()}%"></div></div>
+        <span class="clpnum" id="pnum">${pct()}%</span>
+      </div>
+    </div>
+    <div class="clbody">
+      <div class="clsect">Financial Details — Verify &amp; Confirm (Mandatory)</div>
+      <div class="fingrid">
+        <div class="ffield"><label>Turnover (₹)</label><input type="number" id="fT" value="${rd.turnover||''}" placeholder="Enter amount" oninput="updF('turnover',this.value,'${udin}')"></div>
+        <div class="ffield"><label>Borrowings (₹)</label><input type="number" id="fB" value="${rd.borrowings||''}" placeholder="Enter amount" oninput="updF('borrowings',this.value,'${udin}')"></div>
+        <div class="ffield"><label>Networth (₹)</label><input type="number" id="fN" value="${rd.networth||''}" placeholder="Enter amount" oninput="updF('networth',this.value,'${udin}')"></div>
+      </div>
+      <div class="clsect">Checklist — ${svc} (${items.length} items)</div>
+      <div class="clitems">
+        ${items.map((item, i) => `
+        <div class="clitem" id="ci${i}">
+          <span class="clinum">${i+1}</span>
+          <span class="cliname">${item}</span>
+          <div class="clibtns">
+            <button class="mbtn yes ${rd.items[i]==='Yes'?'on':''}" onclick="markI(${i},'Yes','${udin}')">Yes</button>
+            <button class="mbtn no ${rd.items[i]==='No'?'on':''}" onclick="markI(${i},'No','${udin}')">No</button>
+            <button class="mbtn na ${rd.items[i]==='NA'?'on':''}" onclick="markI(${i},'NA','${udin}')">NA</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="clfooter">
+      <div class="clfoot-left" id="clstatus">${rd.completed ? `Completed by <strong>${rd.completedBy}</strong> on ${fts(rd.completedDate)}` : 'Complete all checklist items and confirm financials to mark as done.'}</div>
+      <div class="clfoot-right">
+        <button class="btn" onclick="saveP('${udin}')">Save Progress</button>
+        <button class="btn btn-green" id="btnC" onclick="markDone('${udin}')" ${canComplete()?'':'disabled'}>${rd.completed?'✓ Re-mark Complete':'Mark as Complete'}</button>
+      </div>
+    </div>
+  </div>`;
+  area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+window.updF = function(field, val, udin) {
+  const old = RD[udin][field];
+  RD[udin][field] = val;
+  if (String(old) !== String(val)) log('EDIT_FIN', udin, `${CU.username} updated ${field}`, old||'—', val||'—');
+  refreshCL(udin);
+};
+
+window.markI = function(idx, val, udin) {
+  const svc = (UDINS.find(r => r['UDIN'] === udin)||{})['Sub-Type']||'';
+  const itemName = (CHECKLISTS[svc]||[])[idx]||'Item '+(idx+1);
+  const old = RD[udin].items[idx];
+  RD[udin].items[idx] = val;
+  if (old !== val) log('MARK', udin, `${CU.username} marked "${itemName}" as ${val}`, old||'—', val);
+  refreshCL(udin);
+};
+
+window.saveP = function(udin) {
+  RD[udin].savedBy = CU.username;
+  RD[udin].savedAt = new Date().toISOString();
+  saveLocal();
+  drawTable(UDINS.filter(r => (CU.partners||[]).includes(r['Partner'])));
+  log('SAVE', udin, `${CU.username} saved progress`);
+  toast('Progress saved ✓');
+};
+
+window.markDone = function(udin) {
+  const wasCompleted = RD[udin].completed;
+  RD[udin].completed = true;
+  RD[udin].completedBy = CU.username;
+  RD[udin].completedDate = new Date().toISOString();
+  saveLocal();
+  drawTable(UDINS.filter(r => (CU.partners||[]).includes(r['Partner'])));
+  log(wasCompleted ? 'RE_COMPLETE' : 'COMPLETE', udin, `${CU.username} marked UDIN as complete`);
+  toast('UDIN marked as Completed ✓');
+  const bc = document.getElementById('btnC');
+  if (bc) { bc.textContent = '✓ Re-mark Complete'; bc.disabled = false; }
+  const cs = document.getElementById('clstatus');
+  if (cs) cs.innerHTML = `Completed by <strong>${CU.username}</strong> on ${fts(new Date().toISOString())}`;
+};
+
+function refreshCL(udin) {
+  const rd = RD[udin];
+  const svc = (UDINS.find(r => r['UDIN'] === udin)||{})['Sub-Type']||'';
+  const items = CHECKLISTS[svc]||[];
+  function pct() {
+    const marked = items.filter((_,i) => rd.items[i]).length;
+    const finOk = rd.turnover && rd.borrowings && rd.networth ? 1 : 0;
+    return items.length ? Math.round(((marked+finOk)/(items.length+1))*100) : (finOk?100:0);
+  }
+  const pf = document.getElementById('pfill'); if (pf) pf.style.width = pct()+'%';
+  const pn = document.getElementById('pnum'); if (pn) pn.textContent = pct()+'%';
+  items.forEach((_,i) => {
+    const ci = document.getElementById('ci'+i); if (!ci) return;
+    ci.querySelectorAll('.mbtn').forEach(b => b.classList.remove('on'));
+    const v = rd.items[i];
+    if (v) { const b = ci.querySelector('.mbtn.'+v.toLowerCase()); if(b) b.classList.add('on'); }
+  });
+  const bc = document.getElementById('btnC');
+  if (bc) bc.disabled = !(items.every((_,i) => rd.items[i]) && rd.turnover && rd.borrowings && rd.networth);
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
