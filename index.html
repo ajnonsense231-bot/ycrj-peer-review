@@ -450,6 +450,7 @@ function loadLocal() {
   try {
     const r = localStorage.getItem('ycrj_rd'); if (r) RD = JSON.parse(r);
     const a = localStorage.getItem('ycrj_al'); if (a) AUDIT = JSON.parse(a);
+    const u = localStorage.getItem('ycrj_asurl'); if (u) CFG.appsScriptUrl = u;
   } catch(e) {}
 }
 function saveLocal() {
@@ -941,8 +942,9 @@ function rSetup() {
 
 function saveAsUrl() {
   CFG.appsScriptUrl = document.getElementById('asUrl').value.trim();
+  try { localStorage.setItem('ycrj_asurl', CFG.appsScriptUrl); } catch(e) {}
   const el = document.getElementById('asMsg');
-  el.textContent = CFG.appsScriptUrl ? '✓ URL saved successfully.' : 'URL cleared.';
+  el.textContent = CFG.appsScriptUrl ? '✓ URL saved successfully. Will persist across refreshes.' : 'URL cleared.';
   el.className = 'msgbox ' + (CFG.appsScriptUrl ? 'ok' : 'err');
   el.style.display = 'block';
 }
@@ -1079,7 +1081,7 @@ function openCL(udin) {
         <div class="ffield"><label>Borrowings (₹)</label><input type="number" id="fB" value="${rd.borrowings||''}" placeholder="Enter amount" oninput="updF('borrowings',this.value,'${udin}')"></div>
         <div class="ffield"><label>Networth (₹)</label><input type="number" id="fN" value="${rd.networth||''}" placeholder="Enter amount" oninput="updF('networth',this.value,'${udin}')"></div>
       </div>
-      <div class="clsect">Checklist — ${svc} (${items.length} items)</div>
+      <div class="clsect">Checklist — ${svcName} (${items.length} items)</div>
       <div class="clitems">
         ${items.map((item, i) => `
         <div class="clitem" id="ci${i}">
