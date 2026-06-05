@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 const FIRM     = 'YCRJ and Associates';
-const SENDER   = 'office.ycrj@gmail.com';
+const SENDER   = 'info@ycrjca.com';
 const PARTNERS = [
   { name: 'Vijayendra R Nayak',  email: 'ajay.j.231@gmail.com' },
   { name: 'Yashavanth Khanderi', email: 'navimk18@gmail.com'   }
@@ -273,11 +273,10 @@ function dailyReport() {
       .map(r => `   ○  ${r['UDIN']}  —  ${r['Client Name'] || ''}  (${r['Sub-type'] || ''}, ${r['FY'] || ''})`)
       .join('\n');
 
-    const subject = `Peer Review Status — ${partner.name} — As of ${todayStr}`;
-    const body    = buildEmailBody(partner.name, todayStr, total, completed, pending, todayDone, pendingPct, completedList, pendingList);
-
+    const subject  = 'Peer Review Status — ' + partner.name + ' — As of ' + todayStr;
+    const htmlBody = buildEmailBody(partner.name, todayStr, total, completed, pending, todayDone, pendingPct, [], []);
     try {
-      GmailApp.sendEmail(partner.email, subject, body, { name: FIRM, replyTo: SENDER });
+      GmailApp.sendEmail(partner.email, subject, '', { name: FIRM, replyTo: SENDER, htmlBody: htmlBody });
       Logger.log('✓ Sent to: ' + partner.email);
     } catch (ex) {
       Logger.log('✗ Failed: ' + partner.email + ' — ' + ex.message);
@@ -296,8 +295,8 @@ function sendEmails(partners, firm, sender) {
       const completedList = (p.completedList || []).map(u => `   ✓  ${u}`).join('\n');
       const pendingList   = (p.pendingList   || []).map(u => `   ○  ${u}`).join('\n');
       const subject       = `Peer Review Status — ${p.name} — As of ${p.date}`;
-      const body          = buildEmailBody(p.name, p.date, p.total, p.completed, p.pending, p.todayDone, p.pendingPct, completedList, pendingList);
-      GmailApp.sendEmail(p.email, subject, body, { name: firm || FIRM, replyTo: sender || SENDER });
+      const htmlBody = buildEmailBody(p.name, p.date, p.total, p.completed, p.pending, p.todayDone, p.pendingPct, [], []);
+      GmailApp.sendEmail(p.email, subject, '', { name: firm || FIRM, replyTo: sender || SENDER, htmlBody: htmlBody });
       results.push({ name: p.name, status: 'sent' });
     } catch (ex) {
       results.push({ name: p.name, status: 'failed', error: ex.message });
@@ -310,50 +309,82 @@ function sendEmails(partners, firm, sender) {
 // EMAIL BODY
 // ═══════════════════════════════════════════════════════════════
 function buildEmailBody(name, date, total, completed, pending, todayDone, pendingPct, completedList, pendingList) {
-  // Build unique partner link — remove spaces for URL
-  const partnerId = name.replace(/\s+/g, '');
-  const partnerLink = `https://ajay231.github.io/ycrj-peer-review/partner.html?partner=${partnerId}`;
+  const partnerId   = name.replace(/\s+/g, '');
+  const partnerLink = 'https://ajnonsense231-bot.github.io/ycrj-peer-review/partner.html?partner=' + partnerId;
+  const inProgress  = total - completed - pending;
 
-  return `Dear ${name},
+  const htmlBody = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#F4F3EF;font-family:Arial,sans-serif">' +
+    '<table width="100%" cellpadding="0" cellspacing="0" style="background:#F4F3EF;padding:32px 16px">' +
+    '<tr><td align="center">' +
+    '<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #E0DED6">' +
 
-Please find below your Peer Review completion status as of ${date}.
+    // Header
+    '<tr><td style="background:#1B4F8A;padding:24px 32px">' +
+    '<table cellpadding="0" cellspacing="0"><tr>' +
+    '<td style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:8px;text-align:center;vertical-align:middle;color:#ffffff;font-weight:700;font-size:14px">YR</td>' +
+    '<td style="padding-left:12px"><div style="color:#ffffff;font-size:16px;font-weight:700">' + FIRM + '</div>' +
+    '<div style="color:rgba(255,255,255,0.7);font-size:12px;margin-top:2px">Peer Review Management System</div></td>' +
+    '</tr></table></td></tr>' +
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ${FIRM}
-  Peer Review Management System
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // Body
+    '<tr><td style="padding:28px 32px">' +
+    '<p style="font-size:15px;color:#1A1916;margin:0 0 4px">Dear <strong>' + name + '</strong>,</p>' +
+    '<p style="font-size:13px;color:#6B6860;margin:0 0 24px">Here is your peer review completion status as of <strong>' + date + '</strong>.</p>' +
 
-  SUMMARY
-  ─────────────────────────────────────
-  Total UDINs Assigned   :  ${total}
-  Completed              :  ${completed}
-  Pending                :  ${pending}
-  Completed Today        :  ${todayDone}
-  Pending %              :  ${pendingPct}%
+    // Summary Card
+    '<div style="background:#F4F3EF;border-radius:10px;padding:20px 24px;margin-bottom:20px">' +
+    '<div style="font-size:11px;font-weight:700;color:#9B9990;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px">Summary</div>' +
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  COMPLETED UDINs  (${completed})
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${completedList || '   None completed yet.'}
+    // Top 3 metrics
+    '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px"><tr>' +
+    '<td width="32%" style="padding-right:6px"><div style="background:#fff;border-radius:8px;padding:12px;text-align:center">' +
+    '<div style="font-size:10px;font-weight:700;color:#9B9990;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Total</div>' +
+    '<div style="font-size:26px;font-weight:700;color:#1B4F8A">' + total + '</div></div></td>' +
+    '<td width="32%" style="padding:0 3px"><div style="background:#fff;border-radius:8px;padding:12px;text-align:center">' +
+    '<div style="font-size:10px;font-weight:700;color:#9B9990;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Completed</div>' +
+    '<div style="font-size:26px;font-weight:700;color:#276B34">' + completed + '</div></div></td>' +
+    '<td width="32%" style="padding-left:6px"><div style="background:#fff;border-radius:8px;padding:12px;text-align:center">' +
+    '<div style="font-size:10px;font-weight:700;color:#9B9990;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Pending</div>' +
+    '<div style="font-size:26px;font-weight:700;color:#A82828">' + pending + '</div></div></td>' +
+    '</tr></table>' +
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  PENDING UDINs  (${pending})
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${pendingList || '   All UDINs completed — great work!'}
+    // Bottom 2 metrics
+    '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px"><tr>' +
+    '<td width="48%" style="padding-right:6px"><div style="background:#fff;border-radius:8px;padding:12px;text-align:center">' +
+    '<div style="font-size:10px;font-weight:700;color:#9B9990;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">In Progress</div>' +
+    '<div style="font-size:26px;font-weight:700;color:#7A4F00">' + inProgress + '</div></div></td>' +
+    '<td width="48%" style="padding-left:6px"><div style="background:#fff;border-radius:8px;padding:12px;text-align:center">' +
+    '<div style="font-size:10px;font-weight:700;color:#9B9990;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Done Today</div>' +
+    '<div style="font-size:26px;font-weight:700;color:#276B34">' + todayDone + '</div></div></td>' +
+    '</tr></table>' +
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  VIEW YOUR FULL UDIN STATUS ONLINE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Click the link below to view your complete UDIN list with live status:
-  ${partnerLink}
+    // Progress bar
+    '<table width="100%" cellpadding="0" cellspacing="0"><tr>' +
+    '<td style="font-size:12px;color:#6B6860;font-weight:500">Completion</td>' +
+    '<td align="right" style="font-size:12px;font-weight:700;color:#276B34">' + pendingPct + '% pending</td>' +
+    '</tr></table>' +
+    '<div style="background:#E0DED6;border-radius:4px;height:8px;margin-top:6px;overflow:hidden">' +
+    '<div style="width:' + (100 - pendingPct) + '%;height:100%;background:#276B34;border-radius:4px"></div></div>' +
+    '</div>' +
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // CTA Button
+    '<div style="text-align:center;margin-bottom:24px">' +
+    '<a href="' + partnerLink + '" style="display:inline-block;background:#1B4F8A;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700">View Your Full UDIN List &rarr;</a>' +
+    '</div>' +
 
-This is an automated report from the YCRJ Peer Review System.
-For queries: ${SENDER}
+    '<p style="font-size:12px;color:#9B9990;text-align:center;line-height:1.6;margin:0">This is an automated report from the YCRJ Peer Review System.<br>' +
+    'For queries: <a href="mailto:' + SENDER + '" style="color:#1B4F8A">' + SENDER + '</a></p>' +
+    '</td></tr>' +
 
-Regards,
-${FIRM}`;
+    // Footer
+    '<tr><td style="background:#F4F3EF;padding:16px 32px;border-top:1px solid #E0DED6;text-align:center">' +
+    '<p style="font-size:11px;color:#9B9990;margin:0">YCRJ and Associates &middot; Chartered Accountants &middot; Bangalore</p>' +
+    '</td></tr>' +
+
+    '</table></td></tr></table></body></html>';
+
+  return htmlBody;
+}
 }
 
 // ═══════════════════════════════════════════════════════════════
